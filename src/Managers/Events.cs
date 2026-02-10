@@ -37,18 +37,18 @@ public class EventManager(CS2_Poor_MapDecals plugin)
         var ping = @event;
         var player = ping.Userid;
         if (player == null) return HookResult.Continue;
-
+        /*
         if (!_plugin.AllowAdminCommands || !AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag) || !_plugin.PingPlacement)
         {
             return HookResult.Continue;
         }
-
+        */
         var pawn = player.PlayerPawn.Value;
         if (pawn == null) return HookResult.Continue;
 
 
-        _plugin.PluginUtils!.CreateDecalOnClick(pawn, new Vector(ping.X, ping.Y, ping.Z), _plugin.DecalWidth, _plugin.DecalHeight, _plugin.ForceOnVip);
-
+        _plugin.PluginUtils!.CreateDecalOnClick(pawn, new Vector(ping.X, ping.Y, ping.Z), _plugin.MenuManager!._selectedMaterial[player].material! , 512, 512, _plugin.ForceOnVip);
+        Server.PrintToChatAll("TEST");
         return HookResult.Continue;
     }
 

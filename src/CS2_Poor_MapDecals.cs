@@ -25,6 +25,8 @@ public class CS2_Poor_MapDecals : BasePlugin, IPluginConfig<PluginConfig>
     public PluginUtils? PluginUtils { get; private set; }
     public CommandsManager? CommandsManager { get; private set; }
 
+    public MenuManager? MenuManager {get; private set;}
+
     public bool AllowAdminCommands = false;
     public bool PingPlacement = false;
     public int DecalAdToPlace = 0;
@@ -41,6 +43,7 @@ public class CS2_Poor_MapDecals : BasePlugin, IPluginConfig<PluginConfig>
         PluginUtils = new PluginUtils(this);
         CommandsManager = new CommandsManager(this);
         PropManager = new PropManager(this);
+        MenuManager = new MenuManager(this);
 
         EventManager.RegisterEvents();
         CommandsManager.RegisterCommands();

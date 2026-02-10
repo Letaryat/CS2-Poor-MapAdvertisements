@@ -13,15 +13,38 @@ public class CommandsManager(CS2_Poor_MapDecals plugin)
     {
         if (_plugin.Config.EnableCMD)
         {
+            _plugin.AddCommand("css_mapadverts", "Map advertisements menu", OnMapAdvert);
+
             _plugin.AddCommand("css_placedecals", "Allow to place advertisements", OnAllowPlacing);
+
+            /*
             _plugin.AddCommand("css_setdecal", "Set advertisement model for bullet & ping", OnConfigureAd);
             _plugin.AddCommand("css_pingdecals", "Place advertisement by ping", OnClickAdvertisement);
             _plugin.AddCommand("css_removedecal", "Remove BS Entity using ID", OnRemoveEntity);
             _plugin.AddCommand("css_tpdecal", "Teleport to BS Entity using ID", TeleportToEntity);
             _plugin.AddCommand("css_showdecals", "List of entities on this map", ShowEntityList);
             _plugin.AddCommand("css_printdecals", "List of a models that can be placed", PrintAdModels);
+            */
         }
     }
+
+    private void OnMapAdvert(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if(player == null) return;
+        var pawn = player.PlayerPawn.Value;
+        if (pawn == null) return;
+
+        if (!AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag))
+        {
+            player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer["NoAccess"]}");
+            return;
+        }
+
+        _plugin.MenuManager!.ShowMapAdvertMenu(player);
+
+        return;
+    }
+
 
     [CommandHelper(minArgs: 4, usage: "[modelid], [width], [height] [ForceToVip (true / false)]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
     private void OnConfigureAd(CCSPlayerController? player, CommandInfo commandInfo)
@@ -171,7 +194,7 @@ public class CommandsManager(CS2_Poor_MapDecals plugin)
         player.PrintToConsole($"| ID | MODELID | POS | ");
         foreach (var entity in _plugin.PropManager!._props)
         {
-            player.PrintToConsole($"| {entity.Id} | {entity.ModelIndex}  | X: {entity.posX}, Y: {entity.posY}, Z: {entity.posZ} |");
+            player.PrintToConsole($"| {entity.Id} | {entity.modelPath}  | X: {entity.posX}, Y: {entity.posY}, Z: {entity.posZ} |");
         }
         player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer["Console"]}");
     }

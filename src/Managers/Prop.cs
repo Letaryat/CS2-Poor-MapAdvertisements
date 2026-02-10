@@ -1,4 +1,6 @@
-﻿using CounterStrikeSharp.API.Modules.Utils;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using CS2_Poor_MapDecals.Models;
 using System.Text.Json;
 
@@ -10,6 +12,7 @@ namespace CS2_Poor_MapDecals.Managers
         public string? _mapName;
         public string? _mapFilePath;
         public readonly List<PropModel> _props = [];
+        //public readonly Dictionary<int, CPhysicsPropOverride> _entityProps = [];
         private static readonly object _fileLock = new();
 
         public void GenerateJsonFile()
@@ -32,7 +35,7 @@ namespace CS2_Poor_MapDecals.Managers
             }
         }
 
-        public void PushCordsToFile(Vector pos, QAngle angle, int newIndex, float width, float height, bool forceToVip)
+        public void PushCordsToFile(Vector pos, QAngle angle, string ModelPath, float width, float height, bool forceToVip)
         {
             lock (_fileLock)
             {
@@ -42,7 +45,7 @@ namespace CS2_Poor_MapDecals.Managers
                 _props.Add(new PropModel
                 {
                     Id = newId,
-                    ModelIndex = newIndex,
+                    modelPath = ModelPath,
                     posX = pos.X,
                     posY = pos.Y,
                     posZ = pos.Z,
@@ -77,7 +80,18 @@ namespace CS2_Poor_MapDecals.Managers
         {
             foreach (var prop in _props)
             {
-                _plugin.PluginUtils!.CreateDecal(new Vector(prop.posX, prop.posY, prop.posZ), new QAngle(prop.angleX, prop.angleY, prop.angleZ), prop.ModelIndex, prop.width, prop.height, prop.forceOnVip);
+                if(_plugin.PluginUtils!.CheckMaterial(prop.modelPath!))
+                {
+                    var ent = _plugin.PluginUtils!.CreatePropModel(new Vector(prop.posX, prop.posY, prop.posZ), new QAngle(prop.angleX, prop.angleY, prop.angleZ), prop.modelPath!, prop.forceOnVip, prop.isOnGround ? true : false, prop.ModelGroupIndex, prop.Id);
+                    if(ent != null)
+                    {
+                        prop.EntityProp = ent;
+                    }
+                }
+                else
+                {
+                    _plugin.PluginUtils!.CreateDecal(new Vector(prop.posX, prop.posY, prop.posZ), new QAngle(prop.angleX, prop.angleY, prop.angleZ), 0!, prop.width, prop.height, prop.forceOnVip);
+                }
             }
         }
 
@@ -98,5 +112,24 @@ namespace CS2_Poor_MapDecals.Managers
             var options = new JsonSerializerOptions { WriteIndented = true };
             File.WriteAllText(_mapFilePath!, JsonSerializer.Serialize(_props, options));
         }
+
+        /*
+        public CPhysicsPropOverride GetEntityProp(int id)
+        {
+            var allAdvs = Utilities.FindAllEntitiesByDesignerName<CPhysicsPropOverride>("prop_physics_override");
+            CPhysicsPropOverride? lookedAdv = null;
+            foreach(var adv in allAdvs)
+            {
+                var name = adv.Entity!.Name;
+                if (name.Contains($"advert_prop{id}"))
+                {
+                    lookedAdv = adv;
+                }
+            }
+            if(lookedAdv == null) return null!;
+            return lookedAdv;
+        }
+        */
+
     }
 }

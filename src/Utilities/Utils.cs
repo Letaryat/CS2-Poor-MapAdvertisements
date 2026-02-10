@@ -11,52 +11,102 @@ namespace CS2_Poor_MapDecals.Utils;
 public class PluginUtils(CS2_Poor_MapDecals plugin)
 {
     private readonly CS2_Poor_MapDecals _plugin = plugin;
-
-    public unsafe void CreateDecal(Vector cords, QAngle angle, int index, float width, float height, bool forceOnVip)
+    public const int DecalDepth = 12;
+    private const float DecalBackwardOffset = 2f;
+    public void CreateDecal(Vector cords, QAngle angle, int index, float width, float height, bool forceOnVip)
     {
-        var entity = Utilities.CreateEntityByName<CEnvDecal>("env_decal");
-        if (entity == null) return;
+        if (index < 0 || index >= _plugin.Config.Props.Length)
+        {
+            _plugin.DebugMode($"Invalid decal index {index}. Skipping.");
+            return;
+        }
 
         try
         {
-            var material = _plugin.Config.Props[index];
-            var materialPtr = FindMaterialByPath(material);
-            if (materialPtr == IntPtr.Zero)
-            {
-                _plugin.DebugMode("Could not find a material. Skipping.");
-                return;
-            }
+            using var keyValues = new CEntityKeyValues();
+            var entity = Utilities.CreateEntityByName<CEnvDecal>("env_decal");
+            if (entity == null) return;
 
-            entity.Entity!.Name = "advert";
+            var tick = Server.TickCount;
+            entity.Entity!.Name = forceOnVip ? $"advert_force_{tick}" : $"advert_{tick}";
 
-            if (forceOnVip)
-            {
-                entity.Entity!.Name += "force";
-            }
+            // Set material via CEntityKeyValues -- the engine handles loading the material
+            // and creating the proper CStrongHandle with reference counting, preventing
+            // the resource from being garbage-collected during long server runs.
+            keyValues.SetString("targetname", entity.Entity.Name);
+            keyValues.SetString("material", "materials/cybershoke.vmat");
 
             entity.Width = width;
             entity.Height = height;
-            entity.Depth = 4;
-
-            Unsafe.Write((void*)entity.DecalMaterial.Handle, materialPtr);
-            Utilities.SetStateChanged(entity, "CEnvDecal", "m_hDecalMaterial");
-
+            entity.Depth = 12;
             entity.RenderOrder = 1;
             entity.RenderMode = RenderMode_t.kRenderNormal;
-
             entity.ProjectOnWorld = true;
 
-            entity.Teleport(cords, new QAngle(angle.X, angle.Y, 0));
-            entity.DispatchSpawn();
+            entity.Teleport(cords, angle);
+            entity.DispatchSpawn(keyValues);
         }
         catch (Exception error)
         {
             _plugin.DebugMode($"{error}");
         }
-
     }
 
-    public void CreateDecalOnClick(CCSPlayerPawn pawn, Vector position, float width, float height, bool forceOnVip)
+    public CPhysicsPropOverride? CreatePropModel(Vector cords, QAngle angle, string material, bool forceOnVip, bool onGround, int materialIndex, int propId)
+    {
+        var entity = Utilities.CreateEntityByName<CPhysicsPropOverride>("prop_physics_override");
+        if (entity == null) return null;
+
+        entity.Entity!.Name = $"advert_prop{propId}";
+        if (forceOnVip)
+        {
+            entity.Entity!.Name += "_force";
+        }
+        QAngle qangle = new QAngle(0, angle.Y, 0);
+        entity.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
+        entity.SetModel(material);
+        entity.Teleport(new Vector(cords.X, cords.Y, cords.Z), qangle);
+        if (onGround)
+        {
+            entity.AbsRotation!.X = -90;
+        }
+        if (materialIndex != 0)
+        {
+            entity.AcceptInput("Skin", entity, entity, materialIndex.ToString());
+        }
+
+        entity!.DispatchSpawn();
+        return entity;
+    }
+
+        public CPhysicsPropOverride? CreatePropModelOnClick(Vector cords, QAngle angle, string material, bool forceOnVip, bool onGround, int materialIndex)
+    {
+        var entity = Utilities.CreateEntityByName<CPhysicsPropOverride>("prop_physics_override");
+        if (entity == null) return null;
+
+        entity.Entity!.Name = $"advert_prop";
+        if (forceOnVip)
+        {
+            entity.Entity!.Name += "_force";
+        }
+        QAngle qangle = new QAngle(0, angle.Y, 0);
+        entity.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
+        entity.SetModel(material);
+        entity.Teleport(new Vector(cords.X, cords.Y, cords.Z), qangle);
+        if (onGround)
+        {
+            entity.AbsRotation!.X = -90;
+        }
+        if (materialIndex != 0)
+        {
+            entity.AcceptInput("Skin", entity, entity, materialIndex.ToString());
+        }
+
+        entity!.DispatchSpawn();
+        return entity;
+    }
+
+    public void CreateDecalOnClick(CCSPlayerPawn pawn, Vector position, string material, float width, float height, bool forceOnVip)
     {
         float flippedYaw = (pawn.EyeAngles.Y + 180.0f) % 360.0f;
         QAngle spriteAngle = new QAngle(pawn.EyeAngles.X, flippedYaw, pawn.EyeAngles.Z);
@@ -74,13 +124,13 @@ public class PluginUtils(CS2_Poor_MapDecals plugin)
             if (eyeAngleZ < -0.90)
             {
                 offsetPos.Z += 1f;
-                CreateDecal(offsetPos, new QAngle(0, spriteAngle.Y, 0), _plugin.DecalAdToPlace, width, height, forceOnVip);
-                _plugin.PropManager!.PushCordsToFile(offsetPos, new QAngle(0, spriteAngle.Y, 0), _plugin.DecalAdToPlace, width, height, forceOnVip);
+                CreateDecal(offsetPos, new QAngle(0, spriteAngle.Y, 0), 0, width, height, forceOnVip);
+                _plugin.PropManager!.PushCordsToFile(offsetPos, new QAngle(0, spriteAngle.Y, 0), material, width, height, forceOnVip);
             }
             else
             {
-                CreateDecal(offsetPos, new QAngle(90, spriteAngle.Y, 0), _plugin.DecalAdToPlace, width, height, forceOnVip);
-                _plugin.PropManager!.PushCordsToFile(offsetPos, new QAngle(90, spriteAngle.Y, 0), _plugin.DecalAdToPlace, width, height, forceOnVip);
+                CreateDecal(offsetPos, new QAngle(90, spriteAngle.Y, 0), 0, width, height, forceOnVip);
+                _plugin.PropManager!.PushCordsToFile(offsetPos, new QAngle(90, spriteAngle.Y, 0), material, width, height, forceOnVip);
             }
         }
         catch (Exception error)
@@ -113,36 +163,16 @@ public class PluginUtils(CS2_Poor_MapDecals plugin)
         var eyeVector = new Vector((float)(Math.Cos(yaw) * Math.Cos(pitch)), (float)(Math.Sin(yaw) * Math.Cos(pitch)), (float)-Math.Sin(pitch));
         return eyeVector.Z;
     }
-
-    // Credits to:
-    // https://github.com/samyycX/CS2-SkyboxChanger/blob/master/Helper.cs#L26
-
-    public static unsafe IntPtr FindMaterialByPath(string material)
+    public bool CheckMaterial(string materialPath)
     {
-        if (material.EndsWith("_c"))
+        var splitMaterialPath = materialPath.Split(".");
+        if (splitMaterialPath[1] == "vmdl")
         {
-            material = material.Substring(0, material.Length - 2);
-        }
-        IntPtr pIMaterialSystem2 = NativeAPI.GetValveInterface(0, "VMaterialSystem2_001");
-        var FindOrCreateFromResource = VirtualFunction.Create<IntPtr, IntPtr, string, IntPtr>(pIMaterialSystem2, 14);
-        IntPtr outMaterial = 0;
-        IntPtr pOutMaterial = (nint)(&outMaterial);
-        IntPtr materialptr3;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            materialptr3 = FindOrCreateFromResource.Invoke(pIMaterialSystem2, pOutMaterial, material);
+            return true;
         }
         else
         {
-            materialptr3 = FindOrCreateFromResource.Invoke(pOutMaterial, 0, material);
+            return false;
         }
-        if (materialptr3 == 0)
-        {
-            return 0;
-        }
-        return *(IntPtr*)materialptr3;
     }
-
-
-
 }
