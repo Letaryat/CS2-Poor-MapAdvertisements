@@ -6,6 +6,9 @@ namespace CS2_Poor_MapDecals.Utils;
 
 public partial class PluginUtils
 {
+    /*
+        Thanks to github.com/f3nixCodings for providing me updated way of creating decals.
+    */
     public const int DecalDepth = 12;
     private const float DecalBackwardOffset = 2f;
     public void CreateDecal(Vector cords, QAngle angle, string material, float width, float height, bool forceOnVip, int depth)
