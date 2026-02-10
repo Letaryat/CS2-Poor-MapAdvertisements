@@ -1,55 +1,15 @@
+
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Admin;
-using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
 using CS2_Poor_MapDecals.Models;
 using CS2MenuManager.API.Enum;
 using CS2MenuManager.API.Menu;
 
-namespace CS2_Poor_MapDecals.Managers;
+namespace CS2_Poor_MapDecals.Menu;
 
-public class MenuManager(CS2_Poor_MapDecals plugin)
+public partial class PluginMenu
 {
-    private readonly CS2_Poor_MapDecals _plugin = plugin;
-
-    public Dictionary<CCSPlayerController, SelectedMaterialModel> _selectedMaterial = new();
-    private string[] _retardedWayCords = ["X+", "X-", "Y+", "Y-", "Z+", "Z-"];
-
-    public void ShowMapAdvertMenu(CCSPlayerController player)
-    {
-        if (player == null) return;
-        WasdMenu menu = new("Map adverts menu", _plugin);
-        menu.AddItem("Create prop", (p, o) =>
-        {
-            CreatePropMenu(player, menu);
-            Server.PrintToChatAll("CHUJ");
-        });
-        menu.AddItem("Create decal", (p, o) =>
-        {
-            CreateDecalMenu(player, menu);
-        });
-
-        menu.AddItem("Edit existing props", (p, o) =>
-        {
-            EditPropsMenu(player, menu);
-        });
-
-        menu.AddItem("Edit existing decals", (p, o) =>
-        {
-
-        });
-
-        menu.AddItem("Save all", (p, o) =>
-        {
-
-        });
-
-        menu.Display(player, 0);
-    }
-
-    // Anything related to props:
     public void CreatePropMenu(CCSPlayerController player, WasdMenu? prevMenu)
     {
         if (player == null) return;
@@ -63,7 +23,10 @@ public class MenuManager(CS2_Poor_MapDecals plugin)
                 material = null,
                 isVip = false,
                 isOnGround = false,
-                materialIndex = 0
+                materialIndex = 0,
+                width = 0,
+                height = 0,
+                depth = 0
             };
             _selectedMaterial[player] = data;
         }
@@ -210,84 +173,6 @@ public class MenuManager(CS2_Poor_MapDecals plugin)
             });
         }
 
-        menu.PrevMenu = prevMenu;
-        menu.Display(player, 0);
-    }
-
-
-    // Decal menus:
-    public void CreateDecalMenu(CCSPlayerController player, WasdMenu? prevMenu)
-    {
-        if (player == null) return;
-        var pawn = player.PlayerPawn.Value;
-        if (pawn == null || !pawn.IsValid) return;
-
-        if (!_selectedMaterial.TryGetValue(player, out var data))
-        {
-            data = new SelectedMaterialModel
-            {
-                material = null,
-                isVip = false,
-                isOnGround = false,
-                materialIndex = 0
-            };
-            _selectedMaterial[player] = data;
-        }
-
-        WasdMenu menu = new("Create decal", _plugin);
-
-        menu.AddItem(_selectedMaterial[player].material != null ? _selectedMaterial[player].material! : "Select Material first", DisableOption.DisableHideNumber);
-
-        menu.AddItem("Choose material", (p, o) =>
-        {
-            DecalMaterialsMenu(player, menu);
-        });
-
-        menu.AddItem("Spawn prop", (p, o) =>
-        {
-            _plugin.PluginUtils!.CreateDecalOnClick(pawn, new Vector(pawn.AbsOrigin!.X, pawn.AbsOrigin!.Y, pawn.AbsOrigin!.Z), _selectedMaterial[player].material!, _selectedMaterial[player].width, _selectedMaterial[player].height,  _selectedMaterial[player].isVip);
-        }, disableOption: _selectedMaterial[player].material == null
-        ? DisableOption.DisableHideNumber
-        : DisableOption.None);
-
-        menu.PrevMenu = prevMenu;
-        menu.Display(player, 0);
-    }
-
-    private void DecalMaterialsMenu(CCSPlayerController player, WasdMenu prevMenu)
-    {
-        if (player == null) return;
-        WasdMenu menu = new("Decal materials", _plugin);
-        foreach (var material in _plugin.Config.Props)
-        {
-            if (!_plugin.PluginUtils!.CheckMaterial(material))
-            {
-                menu.AddItem(material, (p, o) =>
-                {
-                    if (!_selectedMaterial.ContainsKey(player))
-                    {
-                        _selectedMaterial.TryAdd(player, new SelectedMaterialModel
-                        {
-                            material = material,
-                            isVip = false,
-                            isOnGround = false,
-                            materialIndex = 0
-                        });
-                    }
-                    else
-                    {
-                        _selectedMaterial[player].material = material;
-                    }
-                    o.PostSelectAction = PostSelectAction.Close;
-
-                    Server.NextFrame(() =>
-                    {
-                        CreateDecalMenu(player, (WasdMenu)prevMenu.PrevMenu!);
-                    });
-
-                });
-            }
-        }
         menu.PrevMenu = prevMenu;
         menu.Display(player, 0);
     }

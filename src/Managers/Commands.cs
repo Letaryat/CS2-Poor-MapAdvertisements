@@ -15,9 +15,8 @@ public class CommandsManager(CS2_Poor_MapDecals plugin)
         {
             _plugin.AddCommand("css_mapadverts", "Map advertisements menu", OnMapAdvert);
 
-            _plugin.AddCommand("css_placedecals", "Allow to place advertisements", OnAllowPlacing);
-
             /*
+            _plugin.AddCommand("css_placedecals", "Allow to place advertisements", OnAllowPlacing);
             _plugin.AddCommand("css_setdecal", "Set advertisement model for bullet & ping", OnConfigureAd);
             _plugin.AddCommand("css_pingdecals", "Place advertisement by ping", OnClickAdvertisement);
             _plugin.AddCommand("css_removedecal", "Remove BS Entity using ID", OnRemoveEntity);

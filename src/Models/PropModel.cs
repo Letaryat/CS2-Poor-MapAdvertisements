@@ -18,6 +18,7 @@ namespace CS2_Poor_MapDecals.Models
         public float height { get; set; }
         public bool forceOnVip { get; set; }
         public bool isOnGround { get; set; }
+        public int depth { get; set; } 
 
         [JsonIgnore]
         public CPhysicsPropOverride? EntityProp { get; set; }

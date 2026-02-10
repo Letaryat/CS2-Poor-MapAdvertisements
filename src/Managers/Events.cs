@@ -37,18 +37,18 @@ public class EventManager(CS2_Poor_MapDecals plugin)
         var ping = @event;
         var player = ping.Userid;
         if (player == null) return HookResult.Continue;
-        /*
-        if (!_plugin.AllowAdminCommands || !AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag) || !_plugin.PingPlacement)
+        
+        if (!AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag)  || !_plugin.MenuManager!._selectedMaterial.TryGetValue(player, out var selected))
         {
             return HookResult.Continue;
         }
-        */
+        
         var pawn = player.PlayerPawn.Value;
         if (pawn == null) return HookResult.Continue;
 
+        if(!selected!.onPing) return HookResult.Continue;
 
-        _plugin.PluginUtils!.CreateDecalOnClick(pawn, new Vector(ping.X, ping.Y, ping.Z), _plugin.MenuManager!._selectedMaterial[player].material! , 512, 512, _plugin.ForceOnVip);
-        Server.PrintToChatAll("TEST");
+        _plugin.PluginUtils!.CreateDecalOnClick(player, new Vector(ping.X, ping.Y, ping.Z));
         return HookResult.Continue;
     }
 
@@ -80,7 +80,7 @@ public class EventManager(CS2_Poor_MapDecals plugin)
                     {
                         //if (ad?.Entity?.Name != null && ad.Entity.Name.Contains("advert"))
                         if (ad.Entity!.Name == null) continue;
-                        if (ad!.Entity!.Name.StartsWith("advert") && !ad!.Entity!.Name.Contains("force"))
+                        if (ad!.Entity!.Name.StartsWith("advert") && ad!.Entity!.Name.Contains("force"))
                         {
                             info.TransmitEntities.Remove(ad);
                         }

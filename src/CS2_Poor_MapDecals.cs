@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CS2_Poor_MapDecals.Config;
 using CS2_Poor_MapDecals.Managers;
+using CS2_Poor_MapDecals.Menu;
 using CS2_Poor_MapDecals.Utils;
 using Microsoft.Extensions.Logging;
 
@@ -9,7 +10,7 @@ public class CS2_Poor_MapDecals : BasePlugin, IPluginConfig<PluginConfig>
 {
     public override string ModuleName => "CS2_Poor_MapDecals";
 
-    public override string ModuleVersion => "1.0";
+    public override string ModuleVersion => "1.1";
 
     public override string ModuleAuthor => "Letaryat | github.com/letaryat";
 
@@ -25,7 +26,7 @@ public class CS2_Poor_MapDecals : BasePlugin, IPluginConfig<PluginConfig>
     public PluginUtils? PluginUtils { get; private set; }
     public CommandsManager? CommandsManager { get; private set; }
 
-    public MenuManager? MenuManager {get; private set;}
+    public PluginMenu? MenuManager {get; private set;}
 
     public bool AllowAdminCommands = false;
     public bool PingPlacement = false;
@@ -43,7 +44,7 @@ public class CS2_Poor_MapDecals : BasePlugin, IPluginConfig<PluginConfig>
         PluginUtils = new PluginUtils(this);
         CommandsManager = new CommandsManager(this);
         PropManager = new PropManager(this);
-        MenuManager = new MenuManager(this);
+        MenuManager = new PluginMenu(this);
 
         EventManager.RegisterEvents();
         CommandsManager.RegisterCommands();
