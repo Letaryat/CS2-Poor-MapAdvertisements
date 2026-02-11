@@ -128,7 +128,7 @@ public class CommandsManager(CS2_Poor_MapDecals plugin)
 
     }
 
-
+    /*
     [CommandHelper(minArgs: 1, usage: "[id]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
     private void OnRemoveEntity(CCSPlayerController? player, CommandInfo commandInfo)
     {
@@ -152,6 +152,7 @@ public class CommandsManager(CS2_Poor_MapDecals plugin)
 
         player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer["RemoveEntity"]}");
     }
+    */
 
     [CommandHelper(minArgs: 1, usage: "[id]", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
     private void TeleportToEntity(CCSPlayerController? player, CommandInfo commandInfo)

@@ -111,10 +111,10 @@ namespace CS2_Poor_MapDecals.Managers
         {
             return id >= 0 && id < _props.Count ? _props[id] : null;
         }
-        public void RemovePropFromFile(string idstring)
+        public void RemovePropFromFile(int id)
         {
-            int id = Convert.ToInt32(idstring);
-            if (id < 0 || id >= _props.Count()) return;
+            //int id = Convert.ToInt32(idstring);
+            //if (id < 0 || id >= _props.Count()) return;
             _props.RemoveAt(id);
 
             for (int i = 0; i < _props.Count; i++)

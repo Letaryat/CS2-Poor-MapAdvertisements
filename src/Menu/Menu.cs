@@ -39,6 +39,11 @@ public partial class PluginMenu(CS2_Poor_MapDecals plugin)
             EditDecalMenu(player, menu);
         });
 
+        menu.AddItem("Remove existing adverts", (p, o) =>
+        {
+            RemoveAdvertsMenu(player, menu);
+        });
+
         menu.AddItem("Clear advert cache", (p, o) =>
         {
             if(!_plugin.MenuManager!._selectedMaterial.ContainsKey(p)) return;
@@ -46,6 +51,24 @@ public partial class PluginMenu(CS2_Poor_MapDecals plugin)
         });
 
         menu.Display(player, 0);
+    }
+
+    private void RemoveAdvertsMenu(CCSPlayerController player, WasdMenu prevMenu)
+    {
+        if (player == null) return;
+        var pawn = player.PlayerPawn.Value;
+        if (pawn == null || !pawn.IsValid) return;
+
+        WasdMenu menu = new($"Choose advert to remove", _plugin);
+        foreach(var adv in _plugin.PropManager!._props)
+        {
+            var name = adv.modelPath!.Split("/");
+            menu.AddItem($"{adv.Id} | {name[name.Count()]}", (p,o) =>
+            {
+                _plugin.PropManager.RemovePropFromFile(adv.Id);
+                player.PrintToChat($"Successfully removed: {adv.Id} | {name[name.Count()]} from file.");
+            });
+        }
     }
 
     private void CordsMenu(CCSPlayerController player, WasdMenu prevMenu, PropModel prop, int propId, int _type)

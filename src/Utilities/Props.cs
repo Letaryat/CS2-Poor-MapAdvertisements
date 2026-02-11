@@ -1,7 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2_Poor_MapDecals.Models;
 
 namespace CS2_Poor_MapDecals.Utils;
 
