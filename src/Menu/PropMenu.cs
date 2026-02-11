@@ -26,7 +26,8 @@ public partial class PluginMenu
                 materialIndex = 0,
                 width = 0,
                 height = 0,
-                depth = 0
+                depth = 0,
+                onPing = false,
             };
             _selectedMaterial[player] = data;
         }
@@ -39,14 +40,31 @@ public partial class PluginMenu
         {
             PropMaterialsMenu(player, menu);
         });
-
-        menu.AddItem("Spawn prop", (p, o) =>
+        menu.AddItem($"Spawn on Ping: {_selectedMaterial[player].onPing}", (p, o) =>
         {
-            _plugin.PluginUtils!.CreatePropModelOnClick(new Vector(pawn.AbsOrigin!.X, pawn.AbsOrigin!.Y, pawn.AbsOrigin!.Z), new QAngle(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z), _selectedMaterial[player].material!, _selectedMaterial[player].isVip, _selectedMaterial[player].isOnGround, _selectedMaterial[player].materialIndex);
+            if (_selectedMaterial[player].onPing) _selectedMaterial[player].onPing = false;
+            else _selectedMaterial[player].onPing = true;
+
+            Server.NextFrame(() =>
+            {
+                CreatePropMenu(player, prevMenu);
+            });
+
         }, disableOption: _selectedMaterial[player].material == null
         ? DisableOption.DisableHideNumber
         : DisableOption.None);
-
+        /*
+        menu.AddItem("Spawn prop", (p, o) =>
+        {
+            _plugin.PluginUtils!.CreatePropModelOnClick(new Vector(pawn.AbsOrigin!.X, pawn.AbsOrigin!.Y, pawn.AbsOrigin!.Z), new QAngle(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z), _selectedMaterial[player].material!, _selectedMaterial[player].isVip, _selectedMaterial[player].isOnGround, _selectedMaterial[player].materialIndex);
+            _plugin.PropManager!.PushCordsToFile(new Vector(pawn.AbsOrigin!.X, pawn.AbsOrigin!.Y, pawn.AbsOrigin!.Z), new QAngle(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z), 
+            _selectedMaterial[player].material!,0,0,_selectedMaterial[player].isVip,0, _selectedMaterial[player].isOnGround,  _selectedMaterial[player].materialIndex);
+            //Server.PrintToChatAll("TEST");
+            //o.PostSelectAction = PostSelectAction.Close;
+        }, disableOption: _selectedMaterial[player].material == null
+        ? DisableOption.DisableHideNumber
+        : DisableOption.None);
+        */
         menu.PrevMenu = prevMenu;
         menu.Display(player, 0);
     }
@@ -99,7 +117,7 @@ public partial class PluginMenu
             {
                 menu.AddItem($"{prop.Id}", (p, o) =>
                 {
-                    EditSpecificProp(player, menu, prop);
+                    EditSpecificProp(player, menu, prop, prop.Id);
                 });
             }
         }
@@ -107,15 +125,19 @@ public partial class PluginMenu
         menu.Display(player, 0);
     }
 
-    private void EditSpecificProp(CCSPlayerController player, WasdMenu prevMenu, PropModel prop)
+    private void EditSpecificProp(CCSPlayerController player, WasdMenu prevMenu, PropModel prop, int propId)
     {
+
         if (player == null) return;
+
         var pawn = player.PlayerPawn.Value;
         if (pawn == null || !pawn.IsValid) return;
 
         WasdMenu menu = new("Edit prop", _plugin);
 
         var entity = prop.EntityProp;
+        if (entity == null) return;
+
         menu.AddItem("Teleport to prop", (p, o) =>
         {
             pawn.Teleport(new Vector(prop.posX, prop.posY, prop.posZ));
@@ -123,18 +145,43 @@ public partial class PluginMenu
             o.PostSelectAction = PostSelectAction.Nothing;
         });
 
-        menu.AddItem("Vip Only: {WIP}", (p, o) =>
+        menu.AddItem($"Vip Only: {prop.forceOnVip}", (p, o) =>
         {
-            pawn.Teleport(new Vector(prop.posX, prop.posY, prop.posZ));
+            if (prop.forceOnVip == true)
+            {
+                prop.forceOnVip = false;
+            }
+            else
+            {
+                prop.forceOnVip = true;
+            }
+
+            Server.NextFrame(() =>
+            {
+                EditSpecificProp(player, prevMenu, prop, propId);
+            });
+        });
+
+        menu.AddItem($"Select skin {prop.ModelGroupIndex}", (p, o) =>
+        {
+            _listenForChat.Add(player, prop);
+
+            player.PrintToChat("You need to write something!");
+
             o.PostSelectAction = PostSelectAction.Nothing;
         });
 
-        menu.AddItem("Select skin {WIP}", (p, o) =>
+
+        menu.AddItem("Change Position", (p, o) =>
         {
-            pawn.Teleport(new Vector(prop.posX, prop.posY, prop.posZ));
-            o.PostSelectAction = PostSelectAction.Nothing;
+            CordsMenu(player, menu, prop, propId, 0);
         });
 
+        menu.AddItem("Change Angles", (p, o) =>
+        {
+            CordsMenu(player, menu, prop, propId, 1);
+        });
+        /*
         foreach (var i in _retardedWayCords)
         {
             menu.AddItem($"Position {i}5", (p, o) =>
@@ -172,6 +219,16 @@ public partial class PluginMenu
                 o.PostSelectAction = PostSelectAction.Nothing;
             });
         }
+        */
+        menu.AddItem("Save prop configuration", (p, o) =>
+        {
+            _plugin.PropManager!.SavePropConfiguration(entity.As<CPhysicsPropOverride>(), prop);
+            player.PrintToChat($"Saved new prop_{prop.Id} configuration");
+            Server.NextFrame(() =>
+            {
+                EditPropsMenu(player, (WasdMenu)prevMenu.PrevMenu!);
+            });
+        });
 
         menu.PrevMenu = prevMenu;
         menu.Display(player, 0);

@@ -13,6 +13,7 @@ namespace CS2_Poor_MapDecals.Managers
         public string? _mapFilePath;
         public readonly List<PropModel> _props = [];
         //public readonly Dictionary<int, CPhysicsPropOverride> _entityProps = [];
+        public readonly List<PropModel> _newPropModels = [];
         private static readonly object _fileLock = new();
 
         public void GenerateJsonFile()
@@ -20,32 +21,33 @@ namespace CS2_Poor_MapDecals.Managers
             string directoryPath = Path.Combine(_plugin.ModuleDirectory, "maps");
             try
             {
-                if(!Directory.Exists(directoryPath))
+                if (!Directory.Exists(directoryPath))
                 {
                     Directory.CreateDirectory(directoryPath);
                 }
-                if(!File.Exists(_mapFilePath))
+                if (!File.Exists(_mapFilePath))
                 {
                     File.WriteAllText(_mapFilePath!, "[]");
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _plugin.DebugMode($"{e}");
             }
         }
 
-        public void PushCordsToFile(Vector pos, QAngle angle, string ModelPath, float width, float height, bool forceToVip, int depth)
+        public PropModel? PushCordsToFile(Vector pos, QAngle angle, string ModelPath, float width, float height, bool forceToVip, int depth, bool isOnGround, int ModelGroupIndex, CBaseEntity entityProp)
         {
             lock (_fileLock)
             {
-                if (pos == null || angle == null) return;
+                if (pos == null || angle == null) return null;
                 int newId = _props.Count();
 
-                _props.Add(new PropModel
+                var model = new PropModel
                 {
                     Id = newId,
                     modelPath = ModelPath,
+                    ModelGroupIndex = ModelGroupIndex,
                     posX = pos.X,
                     posY = pos.Y,
                     posZ = pos.Z,
@@ -55,10 +57,15 @@ namespace CS2_Poor_MapDecals.Managers
                     width = width,
                     height = height,
                     forceOnVip = forceToVip,
-                    depth = depth
-                });
+                    isOnGround = isOnGround,
+                    depth = depth,
+                    EntityProp = entityProp
+                };
+                _props.Add(model);
+
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 File.WriteAllText(_mapFilePath!, JsonSerializer.Serialize(_props, options));
+                return model;
             }
         }
 
@@ -67,7 +74,7 @@ namespace CS2_Poor_MapDecals.Managers
             if (File.Exists(_mapFilePath))
             {
                 string json = File.ReadAllText(_mapFilePath);
-                if(!string.IsNullOrEmpty(json))
+                if (!string.IsNullOrEmpty(json))
                 {
                     _props.Clear();
                     var loadedProps = JsonSerializer.Deserialize<List<PropModel>>(json) ?? [];
@@ -81,17 +88,21 @@ namespace CS2_Poor_MapDecals.Managers
         {
             foreach (var prop in _props)
             {
-                if(_plugin.PluginUtils!.CheckMaterial(prop.modelPath!))
+                if (_plugin.PluginUtils!.CheckMaterial(prop.modelPath!))
                 {
                     var ent = _plugin.PluginUtils!.CreatePropModel(new Vector(prop.posX, prop.posY, prop.posZ), new QAngle(prop.angleX, prop.angleY, prop.angleZ), prop.modelPath!, prop.forceOnVip, prop.isOnGround ? true : false, prop.ModelGroupIndex, prop.Id);
-                    if(ent != null)
+                    if (ent != null)
                     {
                         prop.EntityProp = ent;
                     }
                 }
                 else
                 {
-                    _plugin.PluginUtils!.CreateDecal(new Vector(prop.posX, prop.posY, prop.posZ), new QAngle(prop.angleX, prop.angleY, prop.angleZ), prop.modelPath!, prop.width, prop.height, prop.forceOnVip, prop.depth);
+                    var ent = _plugin.PluginUtils!.CreateDecal(new Vector(prop.posX, prop.posY, prop.posZ), new QAngle(prop.angleX, prop.angleY, prop.angleZ), prop.modelPath!, prop.width, prop.height, prop.forceOnVip, prop.depth);
+                    if(ent != null)
+                    {
+                        prop.EntityProp = ent;
+                    }
                 }
             }
         }
@@ -110,6 +121,29 @@ namespace CS2_Poor_MapDecals.Managers
             {
                 _props[i].Id = i;
             }
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            File.WriteAllText(_mapFilePath!, JsonSerializer.Serialize(_props, options));
+        }
+
+        public void SavePropConfiguration(CBaseEntity entity, PropModel prop)
+        {
+            if(entity == null || !entity.IsValid) return;
+            var pos = entity.AbsOrigin;
+            var ang = entity.AbsRotation;
+
+            if(pos == null || ang == null) return;
+
+            prop.posX = pos.X; prop.posY = pos.Y; prop.posZ = pos.Z;
+            prop.angleX = ang.X; prop.angleY = ang.Y; prop.angleZ = ang.Z;
+
+            if(!_plugin.PluginUtils!.CheckMaterial(prop.modelPath!))
+            {
+                var ent = entity.As<CEnvDecal>();
+                prop.width = ent.Width;
+                prop.height = ent.Height;
+            }
+
+
             var options = new JsonSerializerOptions { WriteIndented = true };
             File.WriteAllText(_mapFilePath!, JsonSerializer.Serialize(_props, options));
         }

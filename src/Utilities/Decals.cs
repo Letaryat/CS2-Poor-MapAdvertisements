@@ -11,13 +11,13 @@ public partial class PluginUtils
     */
     public const int DecalDepth = 12;
     private const float DecalBackwardOffset = 2f;
-    public void CreateDecal(Vector cords, QAngle angle, string material, float width, float height, bool forceOnVip, int depth)
+    public CEnvDecal? CreateDecal(Vector cords, QAngle angle, string material, float width, float height, bool forceOnVip, int depth)
     {
         try
         {
             using var keyValues = new CEntityKeyValues();
             var entity = Utilities.CreateEntityByName<CEnvDecal>("env_decal");
-            if (entity == null) return;
+            if (entity == null) return null;
 
             entity.Entity!.Name = $"advert_decals_";
 
@@ -38,10 +38,12 @@ public partial class PluginUtils
 
             entity.Teleport(cords, angle);
             entity.DispatchSpawn(keyValues);
+            return entity;
         }
         catch (Exception error)
         {
             _plugin.DebugMode($"{error}");
+            return null;
         }
     }
 
@@ -67,13 +69,17 @@ public partial class PluginUtils
             if (eyeAngleZ < -0.90)
             {
                 offsetPos.Z += 1f;
-                CreateDecal(offsetPos, new QAngle(0, spriteAngle.Y, 0), selected.material!, selected.width, selected.height, selected.isVip, selected.depth);
-                _plugin.PropManager!.PushCordsToFile(offsetPos, new QAngle(0, spriteAngle.Y, 0), selected.material!, selected.width, selected.height, selected.isVip, selected.depth);
+                var entity = CreateDecal(offsetPos, new QAngle(0, spriteAngle.Y, 0), selected.material!, selected.width, selected.height, selected.isVip, selected.depth);
+                var model = _plugin.PropManager!.PushCordsToFile(offsetPos, new QAngle(0, spriteAngle.Y, 0), selected.material!, selected.width, selected.height, selected.isVip, selected.depth, false, 0, entity!);
             }
             else
             {
-                CreateDecal(offsetPos, new QAngle(90, spriteAngle.Y, 0), selected.material!, selected.width, selected.height, selected.isVip, selected.depth);
-                _plugin.PropManager!.PushCordsToFile(offsetPos, new QAngle(90, spriteAngle.Y, 0), selected.material!, selected.width, selected.height, selected.isVip, selected.depth);
+                var entity = CreateDecal(offsetPos, new QAngle(90, spriteAngle.Y, 0), selected.material!, selected.width, selected.height, selected.isVip, selected.depth);
+                var model = _plugin.PropManager!.PushCordsToFile(offsetPos, new QAngle(90, spriteAngle.Y, 0), selected.material!, selected.width, selected.height, selected.isVip, selected.depth, false, 0, entity!);
+                if (entity != null)
+                {
+                    model!.EntityProp = entity;
+                }
             }
         }
         catch (Exception error)

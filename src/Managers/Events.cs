@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 
 namespace CS2_Poor_MapDecals.Managers;
@@ -13,6 +14,7 @@ public class EventManager(CS2_Poor_MapDecals plugin)
         //Events:
         _plugin.RegisterEventHandler<EventRoundStart>(OnRoundStart);
         _plugin.RegisterEventHandler<EventPlayerPing>(OnPlayerPing);
+
         //Listeners:
         _plugin.RegisterListener<Listeners.OnServerPrecacheResources>((ResourceManifest manifest) =>
         {
@@ -23,8 +25,44 @@ public class EventManager(CS2_Poor_MapDecals plugin)
         });
         _plugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
         _plugin.RegisterListener<Listeners.CheckTransmit>(OnCheckTransmit);
+        _plugin.RegisterListener<Listeners.OnTick>(OnTick);
+        _plugin.AddCommandListener("say", OnPlayerChatListener);
+        _plugin.AddCommandListener("say_team", OnPlayerChatListener);
     }
 
+    private void OnTick()
+    {
+        foreach(var player in _plugin.MenuManager!._selectedMaterial)
+        {
+            player.Key.PrintToCenterHtml($"You have create on PING Enabled!\n{player.Value.material}");
+        }
+    }
+
+    private HookResult OnPlayerChatListener(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (player == null) return HookResult.Continue;
+        if (!AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag) || !_plugin.MenuManager!._selectedMaterial.TryGetValue(player, out var selected) || !_plugin.MenuManager._listenForChat.ContainsKey(player))
+        {
+            return HookResult.Continue;
+        }
+        var msg = commandInfo.GetArg(1);
+        if(string.IsNullOrWhiteSpace(msg)) return HookResult.Continue;
+        if(!int.TryParse(msg, out int value))
+        {
+            return HookResult.Continue;
+        }
+
+        _plugin.MenuManager._listenForChat[player].ModelGroupIndex = value;
+        
+        player.PrintToChat($"You set to: {value}");
+
+        Server.NextFrame(() =>
+        {
+            _plugin.MenuManager._listenForChat.Remove(player);
+        });
+
+        return HookResult.Continue;
+    }
 
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
@@ -37,18 +75,25 @@ public class EventManager(CS2_Poor_MapDecals plugin)
         var ping = @event;
         var player = ping.Userid;
         if (player == null) return HookResult.Continue;
-        
-        if (!AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag)  || !_plugin.MenuManager!._selectedMaterial.TryGetValue(player, out var selected))
+
+        if (!AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag) || !_plugin.MenuManager!._selectedMaterial.TryGetValue(player, out var selected))
         {
             return HookResult.Continue;
         }
-        
+
         var pawn = player.PlayerPawn.Value;
         if (pawn == null) return HookResult.Continue;
 
-        if(!selected!.onPing) return HookResult.Continue;
-
-        _plugin.PluginUtils!.CreateDecalOnClick(player, new Vector(ping.X, ping.Y, ping.Z));
+        if (!selected!.onPing) return HookResult.Continue;
+        if(_plugin.PluginUtils!.CheckMaterial(selected.material!))
+        {
+            _plugin.PluginUtils!.CreatePropModelOnClick(new Vector(pawn.AbsOrigin!.X, pawn.AbsOrigin!.Y, pawn.AbsOrigin!.Z), new QAngle(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z), selected.material!, selected.isVip, selected.isOnGround, selected.materialIndex);
+        }
+        else
+        {
+            _plugin.PluginUtils!.CreateDecalOnClick(player, new Vector(ping.X, ping.Y, ping.Z));
+        }
+        
         return HookResult.Continue;
     }
 

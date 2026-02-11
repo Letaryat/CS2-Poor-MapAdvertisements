@@ -1,9 +1,5 @@
-﻿using System.Runtime.InteropServices;
-using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Memory;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using System.Runtime.CompilerServices;
 
 
 namespace CS2_Poor_MapDecals.Utils;

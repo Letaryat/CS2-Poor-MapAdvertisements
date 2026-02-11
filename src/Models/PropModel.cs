@@ -21,7 +21,7 @@ namespace CS2_Poor_MapDecals.Models
         public int depth { get; set; } 
 
         [JsonIgnore]
-        public CPhysicsPropOverride? EntityProp { get; set; }
+        public CBaseEntity? EntityProp { get; set; }
 
     }
 }
