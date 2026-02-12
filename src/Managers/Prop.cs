@@ -99,7 +99,7 @@ namespace CS2_Poor_MapDecals.Managers
                 else
                 {
                     var ent = _plugin.PluginUtils!.CreateDecal(new Vector(prop.posX, prop.posY, prop.posZ), new QAngle(prop.angleX, prop.angleY, prop.angleZ), prop.modelPath!, prop.width, prop.height, prop.forceOnVip, prop.depth);
-                    if(ent != null)
+                    if (ent != null)
                     {
                         prop.EntityProp = ent;
                     }
@@ -127,22 +127,55 @@ namespace CS2_Poor_MapDecals.Managers
 
         public void SavePropConfiguration(CBaseEntity entity, PropModel prop)
         {
-            if(entity == null || !entity.IsValid) return;
+            if (entity == null || !entity.IsValid) return;
             var pos = entity.AbsOrigin;
             var ang = entity.AbsRotation;
 
-            if(pos == null || ang == null) return;
+            if (pos == null || ang == null) return;
 
             prop.posX = pos.X; prop.posY = pos.Y; prop.posZ = pos.Z;
             prop.angleX = ang.X; prop.angleY = ang.Y; prop.angleZ = ang.Z;
 
-            if(!_plugin.PluginUtils!.CheckMaterial(prop.modelPath!))
+            if (!_plugin.PluginUtils!.CheckMaterial(prop.modelPath!))
             {
                 var ent = entity.As<CEnvDecal>();
                 prop.width = ent.Width;
                 prop.height = ent.Height;
             }
 
+
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            File.WriteAllText(_mapFilePath!, JsonSerializer.Serialize(_props, options));
+        }
+
+        public void SaveAllAdverts()
+        {
+            foreach (var prop in _props)
+            {
+                var entity = prop.EntityProp;
+                if (entity == null || !entity.IsValid)
+                    continue;
+
+                var pos = entity.AbsOrigin;
+                var ang = entity.AbsRotation;
+
+                if (pos == null || ang == null)
+                    continue;
+
+                prop.posX = pos.X;
+                prop.posY = pos.Y;
+                prop.posZ = pos.Z;
+
+                prop.angleX = ang.X;
+                prop.angleY = ang.Y;
+                prop.angleZ = ang.Z;
+
+                if (entity is CEnvDecal decal)
+                {
+                    prop.width = decal.Width;
+                    prop.height = decal.Height;
+                }
+            }
 
             var options = new JsonSerializerOptions { WriteIndented = true };
             File.WriteAllText(_mapFilePath!, JsonSerializer.Serialize(_props, options));

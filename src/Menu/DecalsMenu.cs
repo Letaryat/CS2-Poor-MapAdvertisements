@@ -34,29 +34,29 @@ public partial class PluginMenu
 
         WasdMenu menu = new("Create decal", _plugin);
 
-        menu.AddItem(_selectedMaterial[player].material != null ? _selectedMaterial[player].material! : "Select Material first", DisableOption.DisableHideNumber);
+        menu.AddItem(_selectedMaterial[player].material != null ? _selectedMaterial[player].material! : $"{_plugin.Localizer["ChooseMaterial"]}", DisableOption.DisableHideNumber);
 
-        menu.AddItem("Choose material", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer["Material_Header"]}", (p, o) =>
         {
             DecalMaterialsMenu(player, menu);
         });
 
-        menu.AddItem(_selectedMaterial[player].width != 0 ? $"Width: {_selectedMaterial[player].width}" : "Select Width first", (p, o) =>
+        menu.AddItem(_selectedMaterial[player].width != 0 ? $"{_plugin.Localizer["Decal_Width", _selectedMaterial[player].width]}" : $"{_plugin.Localizer["SelectFirst_Width"]}", (p, o) =>
         {
             DecalHeightxWidthMenu(player, menu, "Width");
         });
 
-        menu.AddItem(_selectedMaterial[player].height != 0 ? $"Width: {_selectedMaterial[player].height}" : "Select Height first", (p, o) =>
+        menu.AddItem(_selectedMaterial[player].height != 0 ? $"{_plugin.Localizer["Decal_Height", _selectedMaterial[player].height]}" : $"{_plugin.Localizer["SelectFirst_Height"]}", (p, o) =>
         {
             DecalHeightxWidthMenu(player, menu, "Height");
         });
 
-        menu.AddItem($"Depth: {_selectedMaterial[player].depth}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer["Decal_Depth", _selectedMaterial[player].depth]}", (p, o) =>
         {
             DecalsDepthMenu(player, menu);
         });
 
-        menu.AddItem($"Spawn on Ping: {_selectedMaterial[player].onPing}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer["SpawnOnPing", _selectedMaterial[player].onPing]}", (p, o) =>
         {
             if (_selectedMaterial[player].onPing) _selectedMaterial[player].onPing = false;
             else _selectedMaterial[player].onPing = true;
@@ -79,7 +79,7 @@ public partial class PluginMenu
     private void DecalMaterialsMenu(CCSPlayerController player, WasdMenu prevMenu)
     {
         if (player == null) return;
-        WasdMenu menu = new("Decal materials", _plugin);
+        WasdMenu menu = new($"{_plugin.Localizer["Material_Header"]}", _plugin);
         foreach (var material in _plugin.Config.Props)
         {
             if (!_plugin.PluginUtils!.CheckMaterial(material))
@@ -142,9 +142,9 @@ public partial class PluginMenu
     private void DecalsDepthMenu(CCSPlayerController player, WasdMenu prevMenu)
     {
         if (player == null) return;
-        WasdMenu menu = new($"Current depth: {_selectedMaterial[player].depth}", _plugin);
+        WasdMenu menu = new($"{_plugin.Localizer["DecalDepth_Header", _selectedMaterial[player].depth]}", _plugin);
 
-        menu.AddItem("+1 to depth", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer["DecalDepth_Item"]}", (p, o) =>
         {
             _selectedMaterial[player].depth++;
             o.PostSelectAction = PostSelectAction.Reset;
@@ -171,10 +171,64 @@ public partial class PluginMenu
         menu.Display(player, 0);
     }
 
+    private void EditDepth(CCSPlayerController player, WasdMenu prevMenu, PropModel prop)
+    {
+        if (player == null) return;
+        WasdMenu menu = new($"{_plugin.Localizer["DecalDepth_Header", _selectedMaterial[player].depth]}", _plugin);
+
+        menu.AddItem($"{_plugin.Localizer["DecalDepth_ItemPlus"]}", (p, o) =>
+        {
+            prop.depth++;
+            o.PostSelectAction = PostSelectAction.Reset;
+
+            var entity = prop.EntityProp;
+            if (entity == null) return;
+
+            var oldDecal = entity.As<CEnvDecal>();
+            var pos = oldDecal.AbsOrigin;
+            var angle = oldDecal.AbsRotation;
+            var width = oldDecal.Width;
+            var height = oldDecal.Height;
+            var material = oldDecal.DecalMaterial;
+
+            oldDecal.Remove();
+
+            var newProp = _plugin.PluginUtils!.CreateDecal(pos!, angle!, prop.modelPath!, width, height, prop.forceOnVip, prop.depth);
+            prop.EntityProp = newProp;
+
+            o.PostSelectAction = PostSelectAction.Nothing;
+        });
+
+        menu.AddItem($"{_plugin.Localizer["DecalDepth_ItemMinus"]}", (p, o) =>
+        {
+            prop.depth--;
+            o.PostSelectAction = PostSelectAction.Reset;
+
+            var entity = prop.EntityProp;
+            if (entity == null) return;
+
+            var oldDecal = entity.As<CEnvDecal>();
+            var pos = oldDecal.AbsOrigin;
+            var angle = oldDecal.AbsRotation;
+            var width = oldDecal.Width;
+            var height = oldDecal.Height;
+            var material = oldDecal.DecalMaterial;
+
+            oldDecal.Remove();
+
+            var newProp = _plugin.PluginUtils!.CreateDecal(pos!, angle!, prop.modelPath!, width, height, prop.forceOnVip, prop.depth);
+            prop.EntityProp = newProp;
+
+            o.PostSelectAction = PostSelectAction.Nothing;
+        });
+
+        menu.PrevMenu = prevMenu;
+        menu.Display(player, 0);
+    }
     private void EditDecalMenu(CCSPlayerController player, WasdMenu prevMenu)
     {
         if (player == null) return;
-        WasdMenu menu = new("List of decals", _plugin);
+        WasdMenu menu = new($"{_plugin.Localizer["ListOfDecals_Header"]}", _plugin);
         foreach (var prop in _plugin.PropManager!._props)
         {
             if (!_plugin.PluginUtils!.CheckMaterial(prop.modelPath!))
@@ -198,38 +252,56 @@ public partial class PluginMenu
         var entity = prop.EntityProp;
         if (entity == null) return;
 
-        WasdMenu menu = new($"Decal #{propId}", _plugin);
+        WasdMenu menu = new($"{_plugin.Localizer[$"EditDecal_Header"]} #{propId}", _plugin);
 
-        menu.AddItem("Teleport to prop", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"TeleportToAdv"]}", (p, o) =>
         {
             pawn.Teleport(new Vector(prop.posX, prop.posY, prop.posZ));
             o.PostSelectAction = PostSelectAction.Nothing;
         });
 
-        menu.AddItem($"Width: {prop.width}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"WidthDecal"]} {prop.width}", (p, o) =>
         {
             WidthAndHeightMenu(player, menu, prop, propId, 0);
         });
 
-        menu.AddItem($"Height {prop.height}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"Decal_Width"]} {prop.height}", (p, o) =>
         {
             WidthAndHeightMenu(player, menu, prop, propId, 1);
         });
 
-        menu.AddItem("Change Position", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"Decal_Height"]} {prop.height}", (p, o) =>
+        {
+            WidthAndHeightMenu(player, menu, prop, propId, 1);
+        });
+
+        menu.AddItem($"{_plugin.Localizer[$"Decal_Depth"]} {prop.depth}", (p, o) =>
+        {
+            EditDepth(player, menu, prop);
+        });
+
+        menu.AddItem($"{_plugin.Localizer[$"ChangePositionAdvert"]}", (p, o) =>
         {
             CordsMenu(player, menu, prop, propId, 0);
         });
 
-        menu.AddItem("Change Angles", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"ChangeAnglesAdvert"]}", (p, o) =>
         {
             CordsMenu(player, menu, prop, propId, 1);
         });
+        menu.AddItem($"{_plugin.Localizer[$"ConfigChangePositionAdvert"]}", (p, o) =>
+        {
+            CordsMenu(player, menu, prop, propId, 3);
+        });
+        menu.AddItem($"{_plugin.Localizer[$"ConfigChangeAnglesAdvert"]}", (p, o) =>
+        {
+            CordsMenu(player, menu, prop, propId, 2);
+        });
 
-        menu.AddItem("Save decal configuration", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"SavePropConfig"]}", (p, o) =>
         {
             _plugin.PropManager!.SavePropConfiguration(entity.As<CPhysicsPropOverride>(), prop);
-            player.PrintToChat($"Saved new decal_{prop.Id} configuration");
+            player.PrintToChat($"{_plugin.Localizer[$"SavedProp", prop.Id]}");
             Server.NextFrame(() =>
             {
                 EditDecalMenu(player, (WasdMenu)prevMenu.PrevMenu!);
@@ -248,14 +320,14 @@ public partial class PluginMenu
         var entity = prop.EntityProp;
         if (entity == null) return;
 
-        WasdMenu menu = new($"Width / Height for #{propId}", _plugin);
+        WasdMenu menu = new($"{_plugin.Localizer[$"ChangeHeader_{_type}"]} #{propId}", _plugin);
 
         // _type - 0 Width, 1 - Height
         if (_type == 0)
         {
             foreach (var i in _decalSize)
             {
-                menu.AddItem($"Width: {i}", (p, o) =>
+                menu.AddItem($"{i}", (p, o) =>
                 {
                     var oldDecal = entity.As<CEnvDecal>();
                     var pos = oldDecal.AbsOrigin;
@@ -282,7 +354,7 @@ public partial class PluginMenu
         {
             foreach (var i in _decalSize)
             {
-                menu.AddItem($"Height: {i}", (p, o) =>
+                menu.AddItem($"{i}", (p, o) =>
                 {
                     var oldDecal = entity.As<CEnvDecal>();
                     var pos = oldDecal.AbsOrigin;

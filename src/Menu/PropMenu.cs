@@ -32,15 +32,15 @@ public partial class PluginMenu
             _selectedMaterial[player] = data;
         }
 
-        WasdMenu menu = new("Create prop", _plugin);
+        WasdMenu menu = new($"{_plugin.Localizer["Prop_Header"]}", _plugin);
 
-        menu.AddItem(_selectedMaterial[player].material != null ? _selectedMaterial[player].material! : "Select Material first", DisableOption.DisableHideNumber);
+        menu.AddItem(_selectedMaterial[player].material != null ? _selectedMaterial[player].material! : $"{_plugin.Localizer["ChooseMaterial"]}", DisableOption.DisableHideNumber);
 
-        menu.AddItem("Choose material", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer["Material_Header"]}", (p, o) =>
         {
             PropMaterialsMenu(player, menu);
         });
-        menu.AddItem($"Spawn on Ping: {_selectedMaterial[player].onPing}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer["SpawnOnPing", _selectedMaterial[player].onPing]} ", (p, o) =>
         {
             if (_selectedMaterial[player].onPing) _selectedMaterial[player].onPing = false;
             else _selectedMaterial[player].onPing = true;
@@ -53,18 +53,7 @@ public partial class PluginMenu
         }, disableOption: _selectedMaterial[player].material == null
         ? DisableOption.DisableHideNumber
         : DisableOption.None);
-        /*
-        menu.AddItem("Spawn prop", (p, o) =>
-        {
-            _plugin.PluginUtils!.CreatePropModelOnClick(new Vector(pawn.AbsOrigin!.X, pawn.AbsOrigin!.Y, pawn.AbsOrigin!.Z), new QAngle(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z), _selectedMaterial[player].material!, _selectedMaterial[player].isVip, _selectedMaterial[player].isOnGround, _selectedMaterial[player].materialIndex);
-            _plugin.PropManager!.PushCordsToFile(new Vector(pawn.AbsOrigin!.X, pawn.AbsOrigin!.Y, pawn.AbsOrigin!.Z), new QAngle(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z), 
-            _selectedMaterial[player].material!,0,0,_selectedMaterial[player].isVip,0, _selectedMaterial[player].isOnGround,  _selectedMaterial[player].materialIndex);
-            //Server.PrintToChatAll("TEST");
-            //o.PostSelectAction = PostSelectAction.Close;
-        }, disableOption: _selectedMaterial[player].material == null
-        ? DisableOption.DisableHideNumber
-        : DisableOption.None);
-        */
+
         menu.PrevMenu = prevMenu;
         menu.Display(player, 0);
     }
@@ -72,7 +61,7 @@ public partial class PluginMenu
     private void PropMaterialsMenu(CCSPlayerController player, WasdMenu prevMenu)
     {
         if (player == null) return;
-        WasdMenu menu = new("Prop materials", _plugin);
+        WasdMenu menu = new($"{_plugin.Localizer["Material_Header"]}", _plugin);
         foreach (var material in _plugin.Config.Props)
         {
             if (_plugin.PluginUtils!.CheckMaterial(material))
@@ -110,7 +99,7 @@ public partial class PluginMenu
     private void EditPropsMenu(CCSPlayerController player, WasdMenu prevMenu)
     {
         if (player == null) return;
-        WasdMenu menu = new("List of props", _plugin);
+        WasdMenu menu = new($"{_plugin.Localizer["ListOfProps_Header"]}", _plugin);
         foreach (var prop in _plugin.PropManager!._props)
         {
             if (_plugin.PluginUtils!.CheckMaterial(prop.modelPath!))
@@ -133,19 +122,19 @@ public partial class PluginMenu
         var pawn = player.PlayerPawn.Value;
         if (pawn == null || !pawn.IsValid) return;
 
-        WasdMenu menu = new("Edit prop", _plugin);
+        WasdMenu menu = new($"{_plugin.Localizer["EditProp_Header", propId]}", _plugin);
 
         var entity = prop.EntityProp;
         if (entity == null) return;
 
-        menu.AddItem("Teleport to prop", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer["TeleportToAdv"]}", (p, o) =>
         {
             pawn.Teleport(new Vector(prop.posX, prop.posY, prop.posZ));
 
             o.PostSelectAction = PostSelectAction.Nothing;
         });
 
-        menu.AddItem($"Vip Only: {prop.forceOnVip}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer["VipOnly", prop.forceOnVip]}", (p, o) =>
         {
             if (prop.forceOnVip == true)
             {
@@ -162,68 +151,38 @@ public partial class PluginMenu
             });
         });
 
-        menu.AddItem($"Select skin {prop.ModelGroupIndex}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer["SelectPropSkin"]} {prop.ModelGroupIndex}", (p, o) =>
         {
             _listenForChat.Add(player, prop);
 
-            player.PrintToChat("You need to write something!");
+            player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer["NotificationSkin"]}");
 
             o.PostSelectAction = PostSelectAction.Nothing;
         });
 
 
-        menu.AddItem("Change Position", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"ChangePositionAdvert"]}", (p, o) =>
         {
             CordsMenu(player, menu, prop, propId, 0);
         });
 
-        menu.AddItem("Change Angles", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"ChangeAnglesAdvert"]}", (p, o) =>
         {
             CordsMenu(player, menu, prop, propId, 1);
         });
-        /*
-        foreach (var i in _retardedWayCords)
+        menu.AddItem($"{_plugin.Localizer[$"ConfigChangePositionAdvert"]}", (p, o) =>
         {
-            menu.AddItem($"Position {i}5", (p, o) =>
-            {
-                var pos = entity!.AbsOrigin!;
-                var newPos = new Vector(pos.X, pos.Y, pos.Z);
-
-                if (i == "X+") newPos = new Vector(pos.X + 5, pos.Y, pos.Z);
-                else if (i == "X-") newPos = new Vector(pos.X - 5, pos.Y, pos.Z);
-                else if (i == "Y+") newPos = new Vector(pos.X, pos.Y + 5, pos.Z);
-                else if (i == "Y-") newPos = new Vector(pos.X, pos.Y - 5, pos.Z);
-                else if (i == "Z+") newPos = new Vector(pos.X, pos.Y, pos.Z + 5);
-                else if (i == "Z-") newPos = new Vector(pos.X, pos.Y, pos.Z - 5);
-
-                entity.Teleport(newPos, entity.AbsRotation);
-                o.PostSelectAction = PostSelectAction.Nothing;
-            });
-        }
-
-        foreach (var i in _retardedWayCords)
+            CordsMenu(player, menu, prop, propId, 3);
+        });
+        menu.AddItem($"{_plugin.Localizer[$"ConfigChangeAnglesAdvert"]}", (p, o) =>
         {
-            menu.AddItem($"Angle {i}5", (p, o) =>
-            {
-                var angles = entity!.AbsRotation!;
-                var newQangle = new QAngle(angles.X, angles.Y, angles.Z);
+            CordsMenu(player, menu, prop, propId, 2);
+        });
 
-                if (i == "X+") newQangle = new QAngle(angles.X + 5, angles.Y, angles.Z);
-                else if (i == "X-") newQangle = new QAngle(angles.X - 5, angles.Y, angles.Z);
-                else if (i == "Y+") newQangle = new QAngle(angles.X, angles.Y + 5, angles.Z);
-                else if (i == "Y-") newQangle = new QAngle(angles.X, angles.Y - 5, angles.Z);
-                else if (i == "Z+") newQangle = new QAngle(angles.X, angles.Y, angles.Z + 5);
-                else if (i == "Z-") newQangle = new QAngle(angles.X, angles.Y, angles.Z - 5);
-
-                entity.Teleport(entity.AbsOrigin, newQangle);
-                o.PostSelectAction = PostSelectAction.Nothing;
-            });
-        }
-        */
-        menu.AddItem("Save prop configuration", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"SavePropConfig"]}", (p, o) =>
         {
             _plugin.PropManager!.SavePropConfiguration(entity.As<CPhysicsPropOverride>(), prop);
-            player.PrintToChat($"Saved new prop_{prop.Id} configuration");
+            player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer[$"SavedProp", prop.Id]}");
             Server.NextFrame(() =>
             {
                 EditPropsMenu(player, (WasdMenu)prevMenu.PrevMenu!);

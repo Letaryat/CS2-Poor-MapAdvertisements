@@ -16,7 +16,6 @@ public partial class PluginUtils
         {
             entity.Entity!.Name += "_force";
         }
-        //QAngle qangle = new QAngle(0, angle.Y, 0);
         entity.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags &= ~(uint)(1 << 2);
         entity.SetModel(material);
         entity.Teleport(new Vector(cords.X, cords.Y, cords.Z), angle);
@@ -37,10 +36,6 @@ public partial class PluginUtils
     {
         var entity = Utilities.CreateEntityByName<CPhysicsPropOverride>("prop_physics_override");
         if (entity == null) return null;
-
-        //int newId = _plugin.PropManager!._props.Count();
-
-        Server.PrintToChatAll("TEST");
 
         entity.Entity!.Name = $"advert_prop";
         if (forceOnVip)
@@ -71,33 +66,5 @@ public partial class PluginUtils
 
         return entity;
     }
-
-    /*
-    public void NewPropToNewPropList(Vector pos, QAngle angle, string ModelPath, bool forceOnVip, bool onGround, int materialIndex)
-    {
-        if(_newPropsCount <= -1)
-        {
-            _newPropsCount = _plugin.PropManager!._props.Count();
-        }
-        _plugin.PropManager!._newPropModels.Add(new PropModel
-        {
-            Id = _newPropsCount,
-            modelPath = ModelPath,
-            posX = pos.X,
-            posY = pos.Y,
-            posZ = pos.Z,
-            angleX = angle.X,
-            angleY = angle.Y,
-            angleZ = angle.Z,
-            isOnGround = onGround,
-            forceOnVip = forceOnVip,
-            width = 0,
-            height = 0,
-            depth = 0
-        });
-        _newPropsCount++;
-        return;
-    }
-    */
 
 }

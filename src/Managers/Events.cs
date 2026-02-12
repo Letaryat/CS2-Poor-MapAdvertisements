@@ -24,7 +24,7 @@ public class EventManager(CS2_Poor_MapDecals plugin)
             }
         });
         _plugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
-        _plugin.RegisterListener<Listeners.CheckTransmit>(OnCheckTransmit);
+        //_plugin.RegisterListener<Listeners.CheckTransmit>(OnCheckTransmit);
         _plugin.RegisterListener<Listeners.OnTick>(OnTick);
         _plugin.AddCommandListener("say", OnPlayerChatListener);
         _plugin.AddCommandListener("say_team", OnPlayerChatListener);
@@ -34,27 +34,31 @@ public class EventManager(CS2_Poor_MapDecals plugin)
     {
         foreach(var player in _plugin.MenuManager!._selectedMaterial)
         {
-            player.Key.PrintToCenterHtml($"You have create on PING Enabled!\n{player.Value.material}");
+            player.Key.PrintToCenterHtml($"{_plugin.Localizer["OnTickNotification", player.Value.material!]}");
         }
     }
 
     private HookResult OnPlayerChatListener(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (player == null) return HookResult.Continue;
-        if (!AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag) || !_plugin.MenuManager!._selectedMaterial.TryGetValue(player, out var selected) || !_plugin.MenuManager._listenForChat.ContainsKey(player))
+        if (!AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag) || !_plugin.MenuManager!._listenForChat.ContainsKey(player))
         {
+            player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer["NoAccess"]}");
             return HookResult.Continue;
         }
         var msg = commandInfo.GetArg(1);
         if(string.IsNullOrWhiteSpace(msg)) return HookResult.Continue;
         if(!int.TryParse(msg, out int value))
         {
+            player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer["NoArg"]}");
             return HookResult.Continue;
         }
 
         _plugin.MenuManager._listenForChat[player].ModelGroupIndex = value;
         
-        player.PrintToChat($"You set to: {value}");
+        player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer[$"PlayerSelectedSkin", value]}");
+
+        _plugin.MenuManager._listenForChat[player].EntityProp!.AcceptInput("Skin", _plugin.MenuManager._listenForChat[player].EntityProp, _plugin.MenuManager._listenForChat[player].EntityProp, value.ToString());
 
         Server.NextFrame(() =>
         {
@@ -87,7 +91,7 @@ public class EventManager(CS2_Poor_MapDecals plugin)
         if (!selected!.onPing) return HookResult.Continue;
         if(_plugin.PluginUtils!.CheckMaterial(selected.material!))
         {
-            _plugin.PluginUtils!.CreatePropModelOnClick(new Vector(pawn.AbsOrigin!.X, pawn.AbsOrigin!.Y, pawn.AbsOrigin!.Z), new QAngle(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z), selected.material!, selected.isVip, selected.isOnGround, selected.materialIndex);
+            _plugin.PluginUtils!.CreatePropModelOnClick(new Vector(ping.X, ping.Y, ping.Z), new QAngle(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z), selected.material!, selected.isVip, selected.isOnGround, selected.materialIndex);
         }
         else
         {
@@ -97,6 +101,7 @@ public class EventManager(CS2_Poor_MapDecals plugin)
         return HookResult.Continue;
     }
 
+    /*
     private void OnCheckTransmit(CCheckTransmitInfoList infoList)
     {
         var allAdvs = Utilities.FindAllEntitiesByDesignerName<CEnvDecal>("env_decal");
@@ -140,6 +145,7 @@ public class EventManager(CS2_Poor_MapDecals plugin)
 
     }
 
+    */
 
 
     private void OnMapStart(string mapName)
