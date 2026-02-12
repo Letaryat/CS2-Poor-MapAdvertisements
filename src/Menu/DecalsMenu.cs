@@ -27,7 +27,7 @@ public partial class PluginMenu
                 materialIndex = 0,
                 width = 0,
                 height = 0,
-                depth = 0
+                depth = 14
             };
             _selectedMaterial[player] = data;
         }
