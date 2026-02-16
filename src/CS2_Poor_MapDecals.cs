@@ -8,13 +8,13 @@ using Microsoft.Extensions.Logging;
 namespace CS2_Poor_MapDecals;
 public class CS2_Poor_MapDecals : BasePlugin, IPluginConfig<PluginConfig>
 {
-    public override string ModuleName => "CS2_Poor_MapDecals";
+    public override string ModuleName => "CS2_Poor_MapAdvertisements";
 
-    public override string ModuleVersion => "1.2.2";
+    public override string ModuleVersion => "1.0";
 
     public override string ModuleAuthor => "Letaryat | github.com/letaryat";
 
-    public override string ModuleDescription => "Creates decals with advertisements that can be placed on map.";
+    public override string ModuleDescription => "Creates map advertisements.";
 
     public required PluginConfig Config { get; set; }
 
@@ -27,17 +27,9 @@ public class CS2_Poor_MapDecals : BasePlugin, IPluginConfig<PluginConfig>
     public CommandsManager? CommandsManager { get; private set; }
 
     public PluginMenu? MenuManager {get; private set;}
-
-    public bool AllowAdminCommands = false;
-    public bool PingPlacement = false;
-    public int DecalAdToPlace = 0;
-    public float DecalWidth = 128;
-    public float DecalHeight = 128;
-    public bool ForceOnVip = false;
-
     public override void Load(bool hotReload)
     {
-        Console.WriteLine("Loaded CS2_Poor_MapDecals");
+        Console.WriteLine("Loaded CS2_Poor_MapAdvertisements");
         Instance = this;
 
         EventManager = new EventManager(this);
@@ -57,7 +49,7 @@ public class CS2_Poor_MapDecals : BasePlugin, IPluginConfig<PluginConfig>
     }
     public override void Unload(bool hotReload)
     {
-        Console.WriteLine("Unloaded CS2_Poor_MapDecals");
+        Console.WriteLine("Unloaded CS2_Poor_MapAdvertisements");
     }
 
     public void DebugMode(string message)

@@ -44,21 +44,4 @@ public partial class PluginUtils(CS2_Poor_MapDecals plugin)
             return false;
         }
     }
-    public float SnapToStep(float angle, float step)
-    {
-        angle %= 360f;
-        if (angle < 0)
-            angle += 360f;
-
-        float remainder = angle % step;
-
-        if (Math.Abs(remainder) > 0.01f)
-        {
-            return step;
-        }
-
-        return angle;
-    }
-
-
 }

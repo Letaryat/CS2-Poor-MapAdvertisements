@@ -151,9 +151,6 @@ public class EventManager(CS2_Poor_MapDecals plugin)
     private void OnMapStart(string mapName)
     {
         _plugin.PropManager!._props.Clear();
-        _plugin.AllowAdminCommands = false;
-        _plugin.PingPlacement = false;
-        _plugin.DecalAdToPlace = 0;
         Server.NextFrame(() =>
         {
             _plugin.PropManager._mapName = mapName;

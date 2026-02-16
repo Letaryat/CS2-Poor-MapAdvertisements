@@ -41,20 +41,29 @@ public partial class PluginMenu
             DecalMaterialsMenu(player, menu);
         });
 
-        menu.AddItem(_selectedMaterial[player].width != 0 ? $"{_plugin.Localizer["Decal_Width", _selectedMaterial[player].width]}" : $"{_plugin.Localizer["SelectFirst_Width"]}", (p, o) =>
-        {
-            DecalHeightxWidthMenu(player, menu, "Width");
-        });
+        menu.AddItem(
+            _selectedMaterial[player].width != 0
+                ? string.Format(_plugin.Localizer["Decal_Width"], _selectedMaterial[player].width)
+                : _plugin.Localizer["SelectFirst_Width"],
+            (p, o) =>
+            {
+                DecalHeightxWidthMenu(player, menu, "Width");
+            });
 
-        menu.AddItem(_selectedMaterial[player].height != 0 ? $"{_plugin.Localizer["Decal_Height", _selectedMaterial[player].height]}" : $"{_plugin.Localizer["SelectFirst_Height"]}", (p, o) =>
-        {
-            DecalHeightxWidthMenu(player, menu, "Height");
-        });
+        menu.AddItem(
+            _selectedMaterial[player].width != 0
+                ? string.Format(_plugin.Localizer["Decal_Height"], _selectedMaterial[player].width)
+                : _plugin.Localizer["SelectFirst_Height"],
+            (p, o) =>
+            {
+                DecalHeightxWidthMenu(player, menu, "Height");
+            });
 
-        menu.AddItem($"{_plugin.Localizer["Decal_Depth", _selectedMaterial[player].depth]}", (p, o) =>
-        {
-            DecalsDepthMenu(player, menu);
-        });
+        menu.AddItem($"{string.Format(_plugin.Localizer["Decal_Depth"], _selectedMaterial[player].width)}",
+            (p, o) =>
+            {
+                DecalsDepthMenu(player, menu);
+            });
 
         menu.AddItem($"{_plugin.Localizer["SpawnOnPing", _selectedMaterial[player].onPing]}", (p, o) =>
         {
@@ -72,8 +81,6 @@ public partial class PluginMenu
 
         menu.PrevMenu = prevMenu;
         menu.Display(player, 0);
-
-        //Server.PrintToChatAll($"Chuj = {_selectedMaterial[player].material} | {_selectedMaterial[player].onPing} | {_selectedMaterial[player].width} | {_selectedMaterial[player].height}");
     }
 
     private void DecalMaterialsMenu(CCSPlayerController player, WasdMenu prevMenu)
@@ -260,22 +267,17 @@ public partial class PluginMenu
             o.PostSelectAction = PostSelectAction.Nothing;
         });
 
-        menu.AddItem($"{_plugin.Localizer[$"WidthDecal"]} {prop.width}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"Decal_Width", prop.width]}", (p, o) =>
         {
             WidthAndHeightMenu(player, menu, prop, propId, 0);
         });
 
-        menu.AddItem($"{_plugin.Localizer[$"Decal_Width"]} {prop.height}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"Decal_Height", prop.height]} ", (p, o) =>
         {
             WidthAndHeightMenu(player, menu, prop, propId, 1);
         });
 
-        menu.AddItem($"{_plugin.Localizer[$"Decal_Height"]} {prop.height}", (p, o) =>
-        {
-            WidthAndHeightMenu(player, menu, prop, propId, 1);
-        });
-
-        menu.AddItem($"{_plugin.Localizer[$"Decal_Depth"]} {prop.depth}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer[$"Decal_Depth", prop.depth]}", (p, o) =>
         {
             EditDepth(player, menu, prop);
         });
@@ -301,7 +303,7 @@ public partial class PluginMenu
         menu.AddItem($"{_plugin.Localizer[$"SavePropConfig"]}", (p, o) =>
         {
             _plugin.PropManager!.SavePropConfiguration(entity.As<CPhysicsPropOverride>(), prop);
-            player.PrintToChat($"{_plugin.Localizer[$"SavedProp", prop.Id]}");
+            player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer[$"SavedProp", prop.Id]}");
             Server.NextFrame(() =>
             {
                 EditDecalMenu(player, (WasdMenu)prevMenu.PrevMenu!);

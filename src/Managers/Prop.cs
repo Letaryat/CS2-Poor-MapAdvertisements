@@ -113,8 +113,6 @@ namespace CS2_Poor_MapDecals.Managers
         }
         public void RemovePropFromFile(int id)
         {
-            //int id = Convert.ToInt32(idstring);
-            //if (id < 0 || id >= _props.Count()) return;
             _props.RemoveAt(id);
 
             for (int i = 0; i < _props.Count; i++)
@@ -180,24 +178,6 @@ namespace CS2_Poor_MapDecals.Managers
             var options = new JsonSerializerOptions { WriteIndented = true };
             File.WriteAllText(_mapFilePath!, JsonSerializer.Serialize(_props, options));
         }
-
-        /*
-        public CPhysicsPropOverride GetEntityProp(int id)
-        {
-            var allAdvs = Utilities.FindAllEntitiesByDesignerName<CPhysicsPropOverride>("prop_physics_override");
-            CPhysicsPropOverride? lookedAdv = null;
-            foreach(var adv in allAdvs)
-            {
-                var name = adv.Entity!.Name;
-                if (name.Contains($"advert_prop{id}"))
-                {
-                    lookedAdv = adv;
-                }
-            }
-            if(lookedAdv == null) return null!;
-            return lookedAdv;
-        }
-        */
 
     }
 }

@@ -152,10 +152,10 @@ public partial class PluginMenu(CS2_Poor_MapDecals plugin)
 
                         entity.Teleport(entity.AbsOrigin, newQangle);
                         o.PostSelectAction = PostSelectAction.Nothing;
+
                     });
                 }
             }
-
         }
 
         /*
