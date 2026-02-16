@@ -12,42 +12,34 @@ public class PluginUtils(CS2_Poor_MapDecals plugin)
 {
     private readonly CS2_Poor_MapDecals _plugin = plugin;
 
-    public unsafe void CreateDecal(Vector cords, QAngle angle, int index, float width, float height, bool forceOnVip)
+    public void CreateDecal(Vector cords, QAngle angle, int index, float width, float height, bool forceOnVip)
     {
-        var entity = Utilities.CreateEntityByName<CEnvDecal>("env_decal");
-        if (entity == null) return;
-
         try
         {
+            using var keyValues = new CEntityKeyValues();
+            var entity = Utilities.CreateEntityByName<CEnvDecal>("env_decal");
             var material = _plugin.Config.Props[index];
-            var materialPtr = FindMaterialByPath(material);
-            if (materialPtr == IntPtr.Zero)
-            {
-                _plugin.DebugMode("Could not find a material. Skipping.");
-                return;
-            }
+            if (entity == null) return;
 
-            entity.Entity!.Name = "advert";
+            entity.Entity!.Name = $"advert_decals_";
 
             if (forceOnVip)
             {
-                entity.Entity!.Name += "force";
+                entity.Entity!.Name += "_force";
             }
+
+            keyValues.SetString("targetname", entity.Entity.Name);
+            keyValues.SetString("material", material);
 
             entity.Width = width;
             entity.Height = height;
-            entity.Depth = 4;
-
-            Unsafe.Write((void*)entity.DecalMaterial.Handle, materialPtr);
-            Utilities.SetStateChanged(entity, "CEnvDecal", "m_hDecalMaterial");
-
+            entity.Depth = 5;
             entity.RenderOrder = 1;
             entity.RenderMode = RenderMode_t.kRenderNormal;
-
             entity.ProjectOnWorld = true;
 
-            entity.Teleport(cords, new QAngle(angle.X, angle.Y, 0));
-            entity.DispatchSpawn();
+            entity.Teleport(cords, angle);
+            entity.DispatchSpawn(keyValues);
         }
         catch (Exception error)
         {
@@ -117,31 +109,6 @@ public class PluginUtils(CS2_Poor_MapDecals plugin)
     // Credits to:
     // https://github.com/samyycX/CS2-SkyboxChanger/blob/master/Helper.cs#L26
 
-    public static unsafe IntPtr FindMaterialByPath(string material)
-    {
-        if (material.EndsWith("_c"))
-        {
-            material = material.Substring(0, material.Length - 2);
-        }
-        IntPtr pIMaterialSystem2 = NativeAPI.GetValveInterface(0, "VMaterialSystem2_001");
-        var FindOrCreateFromResource = VirtualFunction.Create<IntPtr, IntPtr, string, IntPtr>(pIMaterialSystem2, 14);
-        IntPtr outMaterial = 0;
-        IntPtr pOutMaterial = (nint)(&outMaterial);
-        IntPtr materialptr3;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            materialptr3 = FindOrCreateFromResource.Invoke(pIMaterialSystem2, pOutMaterial, material);
-        }
-        else
-        {
-            materialptr3 = FindOrCreateFromResource.Invoke(pOutMaterial, 0, material);
-        }
-        if (materialptr3 == 0)
-        {
-            return 0;
-        }
-        return *(IntPtr*)materialptr3;
-    }
 
 
 
