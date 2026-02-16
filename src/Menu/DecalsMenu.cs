@@ -52,14 +52,14 @@ public partial class PluginMenu
 
         menu.AddItem(
             _selectedMaterial[player].width != 0
-                ? string.Format(_plugin.Localizer["Decal_Height"], _selectedMaterial[player].width)
+                ? string.Format(_plugin.Localizer["Decal_Height"], _selectedMaterial[player].height)
                 : _plugin.Localizer["SelectFirst_Height"],
             (p, o) =>
             {
                 DecalHeightxWidthMenu(player, menu, "Height");
             });
 
-        menu.AddItem($"{string.Format(_plugin.Localizer["Decal_Depth"], _selectedMaterial[player].width)}",
+        menu.AddItem($"{string.Format(_plugin.Localizer["Decal_Depth"], _selectedMaterial[player].depth)}",
             (p, o) =>
             {
                 DecalsDepthMenu(player, menu);
@@ -267,7 +267,24 @@ public partial class PluginMenu
             o.PostSelectAction = PostSelectAction.Nothing;
         });
 
-        menu.AddItem($"{_plugin.Localizer[$"ChooseMaterial", prop.width]}", (p, o) =>
+        menu.AddItem($"{_plugin.Localizer["VipOnly", prop.forceOnVip]}", (p, o) =>
+{
+    if (prop.forceOnVip == true)
+    {
+        prop.forceOnVip = false;
+    }
+    else
+    {
+        prop.forceOnVip = true;
+    }
+
+    Server.NextFrame(() =>
+    {
+        EditSpecificProp(player, prevMenu, prop, propId);
+    });
+});
+
+        menu.AddItem($"{_plugin.Localizer[$"ChooseMaterial"]}", (p, o) =>
         {
             DecalMaterialEdit(player, menu, prop, propId);
         });
@@ -392,7 +409,7 @@ public partial class PluginMenu
     {
         if (player == null) return;
         WasdMenu menu = new($"{_plugin.Localizer["Material_Header"]}", _plugin);
-        
+
         var entity = prop.EntityProp;
         if (entity == null) return;
 
