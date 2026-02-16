@@ -151,6 +151,13 @@ public partial class PluginMenu
             });
         });
 
+        menu.AddItem($"{_plugin.Localizer["ChooseMaterial"]}", (p, o) =>
+        {
+            PropMaterialEdit(player, menu, prop, propId);
+
+            o.PostSelectAction = PostSelectAction.Close;
+        });
+
         menu.AddItem($"{_plugin.Localizer["SelectPropSkin"]} {prop.ModelGroupIndex}", (p, o) =>
         {
             _listenForChat.Add(player, prop);
@@ -189,6 +196,43 @@ public partial class PluginMenu
             });
         });
 
+        menu.PrevMenu = prevMenu;
+        menu.Display(player, 0);
+    }
+
+
+    private void PropMaterialEdit(CCSPlayerController player, WasdMenu prevMenu, PropModel prop, int propId)
+    {
+        if (player == null) return;
+        WasdMenu menu = new($"{_plugin.Localizer["Material_Header"]}", _plugin);
+        
+        var entity = prop.EntityProp;
+        if (entity == null) return;
+
+        foreach (var material in _plugin.Config.Props)
+        {
+            if (_plugin.PluginUtils!.CheckMaterial(material))
+            {
+                menu.AddItem(material, (p, o) =>
+                {
+                    var oldProp = entity.As<CPhysicsPropOverride>();
+                    var pos = oldProp.AbsOrigin;
+                    var angle = oldProp.AbsRotation;
+
+                    oldProp.Remove();
+
+                    prop.modelPath = material;
+
+                    var newProp = _plugin.PluginUtils!.CreatePropModel(pos!, angle!, material, prop.forceOnVip, prop.isOnGround, prop.ModelGroupIndex, prop.Id);
+                    prop.EntityProp = newProp;
+                    o.PostSelectAction = PostSelectAction.Nothing;
+                    Server.NextFrame(() =>
+                    {
+                        EditSpecificProp(player, prevMenu, prop, propId);
+                    });
+                });
+            }
+        }
         menu.PrevMenu = prevMenu;
         menu.Display(player, 0);
     }

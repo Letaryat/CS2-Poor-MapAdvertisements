@@ -43,7 +43,6 @@ public class EventManager(CS2_Poor_MapAdvertisements plugin)
         if (player == null) return HookResult.Continue;
         if (!AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag) || !_plugin.MenuManager!._listenForChat.ContainsKey(player))
         {
-            //player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer["NoAccess"]}");
             return HookResult.Continue;
         }
         var msg = commandInfo.GetArg(1);

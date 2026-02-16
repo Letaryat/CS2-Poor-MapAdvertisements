@@ -93,6 +93,7 @@ public partial class PluginMenu
             {
                 menu.AddItem(material, (p, o) =>
                 {
+
                     if (!_selectedMaterial.ContainsKey(player))
                     {
                         _selectedMaterial.TryAdd(player, new SelectedMaterialModel
@@ -113,7 +114,6 @@ public partial class PluginMenu
                     {
                         CreateDecalMenu(player, (WasdMenu)prevMenu.PrevMenu!);
                     });
-
                 });
             }
         }
@@ -267,6 +267,11 @@ public partial class PluginMenu
             o.PostSelectAction = PostSelectAction.Nothing;
         });
 
+        menu.AddItem($"{_plugin.Localizer[$"ChooseMaterial", prop.width]}", (p, o) =>
+        {
+            DecalMaterialEdit(player, menu, prop, propId);
+        });
+
         menu.AddItem($"{_plugin.Localizer[$"Decal_Width", prop.width]}", (p, o) =>
         {
             WidthAndHeightMenu(player, menu, prop, propId, 0);
@@ -344,7 +349,7 @@ public partial class PluginMenu
 
                     prop.width = i;
 
-                    o.PostSelectAction = PostSelectAction.Nothing;
+                    o.PostSelectAction = PostSelectAction.Close;
                     Server.NextFrame(() =>
                     {
                         EditSpecificDecal(player, prevMenu, prop, propId);
@@ -381,5 +386,45 @@ public partial class PluginMenu
         menu.PrevMenu = prevMenu;
         menu.Display(player, 0);
     }
+
+
+    private void DecalMaterialEdit(CCSPlayerController player, WasdMenu prevMenu, PropModel prop, int propId)
+    {
+        if (player == null) return;
+        WasdMenu menu = new($"{_plugin.Localizer["Material_Header"]}", _plugin);
+        
+        var entity = prop.EntityProp;
+        if (entity == null) return;
+
+        foreach (var material in _plugin.Config.Props)
+        {
+            if (!_plugin.PluginUtils!.CheckMaterial(material))
+            {
+                menu.AddItem(material, (p, o) =>
+                {
+                    var oldDecal = entity.As<CEnvDecal>();
+                    var pos = oldDecal.AbsOrigin;
+                    var angle = oldDecal.AbsRotation;
+                    var width = oldDecal.Width;
+                    var height = oldDecal.Height;
+
+                    oldDecal.Remove();
+
+                    prop.modelPath = material;
+
+                    var newProp = _plugin.PluginUtils!.CreateDecal(pos!, angle!, material, width, height, prop.forceOnVip, prop.depth);
+                    prop.EntityProp = newProp;
+                    o.PostSelectAction = PostSelectAction.Nothing;
+                    Server.NextFrame(() =>
+                    {
+                        EditSpecificDecal(player, prevMenu, prop, propId);
+                    });
+                });
+            }
+        }
+        menu.PrevMenu = prevMenu;
+        menu.Display(player, 0);
+    }
+
 
 }
