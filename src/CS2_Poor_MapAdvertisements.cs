@@ -1,12 +1,12 @@
 ﻿using CounterStrikeSharp.API.Core;
-using CS2_Poor_MapDecals.Config;
-using CS2_Poor_MapDecals.Managers;
-using CS2_Poor_MapDecals.Menu;
-using CS2_Poor_MapDecals.Utils;
+using CS2_Poor_MapAdvertisements.Config;
+using CS2_Poor_MapAdvertisements.Managers;
+using CS2_Poor_MapAdvertisements.Menu;
+using CS2_Poor_MapAdvertisements.Utils;
 using Microsoft.Extensions.Logging;
 
-namespace CS2_Poor_MapDecals;
-public class CS2_Poor_MapDecals : BasePlugin, IPluginConfig<PluginConfig>
+namespace CS2_Poor_MapAdvertisements;
+public class CS2_Poor_MapAdvertisements : BasePlugin, IPluginConfig<PluginConfig>
 {
     public override string ModuleName => "CS2_Poor_MapAdvertisements";
 
@@ -18,7 +18,7 @@ public class CS2_Poor_MapDecals : BasePlugin, IPluginConfig<PluginConfig>
 
     public required PluginConfig Config { get; set; }
 
-    public static CS2_Poor_MapDecals? Instance { get; private set; }
+    public static CS2_Poor_MapAdvertisements? Instance { get; private set; }
 
     public EventManager? EventManager { get; private set; }
     public PropManager? PropManager { get; private set; }

@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 
 
-namespace CS2_Poor_MapDecals.Config
+namespace CS2_Poor_MapAdvertisements.Config
 {
     public class PluginConfig : BasePluginConfig
     {

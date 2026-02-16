@@ -2,11 +2,11 @@
 using CounterStrikeSharp.API.Modules.Utils;
 
 
-namespace CS2_Poor_MapDecals.Utils;
+namespace CS2_Poor_MapAdvertisements.Utils;
 
-public partial class PluginUtils(CS2_Poor_MapDecals plugin)
+public partial class PluginUtils(CS2_Poor_MapAdvertisements plugin)
 {
-    private readonly CS2_Poor_MapDecals _plugin = plugin;
+    private readonly CS2_Poor_MapAdvertisements _plugin = plugin;
 
     public Vector GetForwardVector(QAngle angles)
     {

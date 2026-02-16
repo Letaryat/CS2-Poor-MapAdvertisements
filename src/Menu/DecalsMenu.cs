@@ -2,11 +2,11 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2_Poor_MapDecals.Models;
+using CS2_Poor_MapAdvertisements.Models;
 using CS2MenuManager.API.Enum;
 using CS2MenuManager.API.Menu;
 
-namespace CS2_Poor_MapDecals.Menu;
+namespace CS2_Poor_MapAdvertisements.Menu;
 
 public partial class PluginMenu
 {

@@ -14,6 +14,7 @@ SoonTM
 
 ## [📌] Setup
 - Download latest release,
+- Download [CS2MenuManager by schwarper](https://github.com/schwarper/CS2MenuManager) - For menu API.
 - Drag files to /plugins/
 - Restart your server,
 - Config file should be created in configs/plugins/

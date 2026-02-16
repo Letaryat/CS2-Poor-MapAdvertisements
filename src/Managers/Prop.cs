@@ -1,18 +1,17 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2_Poor_MapDecals.Models;
+using CS2_Poor_MapAdvertisements.Models;
 using System.Text.Json;
 
-namespace CS2_Poor_MapDecals.Managers
+namespace CS2_Poor_MapAdvertisements.Managers
 {
-    public class PropManager(CS2_Poor_MapDecals plugin)
+    public class PropManager(CS2_Poor_MapAdvertisements plugin)
     {
-        private readonly CS2_Poor_MapDecals _plugin = plugin;
+        private readonly CS2_Poor_MapAdvertisements _plugin = plugin;
         public string? _mapName;
         public string? _mapFilePath;
         public readonly List<PropModel> _props = [];
-        //public readonly Dictionary<int, CPhysicsPropOverride> _entityProps = [];
         public readonly List<PropModel> _newPropModels = [];
         private static readonly object _fileLock = new();
 
@@ -178,6 +177,5 @@ namespace CS2_Poor_MapDecals.Managers
             var options = new JsonSerializerOptions { WriteIndented = true };
             File.WriteAllText(_mapFilePath!, JsonSerializer.Serialize(_props, options));
         }
-
     }
 }

@@ -1,15 +1,15 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2_Poor_MapDecals.Models;
+using CS2_Poor_MapAdvertisements.Models;
 using CS2MenuManager.API.Enum;
 using CS2MenuManager.API.Menu;
 
-namespace CS2_Poor_MapDecals.Menu;
+namespace CS2_Poor_MapAdvertisements.Menu;
 
-public partial class PluginMenu(CS2_Poor_MapDecals plugin)
+public partial class PluginMenu(CS2_Poor_MapAdvertisements plugin)
 {
-    private readonly CS2_Poor_MapDecals _plugin = plugin;
+    private readonly CS2_Poor_MapAdvertisements _plugin = plugin;
 
     public Dictionary<CCSPlayerController, SelectedMaterialModel> _selectedMaterial = new();
     public Dictionary<CCSPlayerController, PropModel> _listenForChat = new();
@@ -157,127 +157,6 @@ public partial class PluginMenu(CS2_Poor_MapDecals plugin)
                 }
             }
         }
-
-        /*
-        if (_type == 0)
-        {
-            foreach (var i in _retardedWayCords)
-            {
-                menu.AddItem($"{i}5", (p, o) =>
-                {
-                    var pos = entity!.AbsOrigin!;
-                    var newPos = new Vector(pos.X, pos.Y, pos.Z);
-
-                    if (i == "X+") newPos = new Vector(pos.X + 5, pos.Y, pos.Z);
-                    else if (i == "X-") newPos = new Vector(pos.X - 5, pos.Y, pos.Z);
-                    else if (i == "Y+") newPos = new Vector(pos.X, pos.Y + 5, pos.Z);
-                    else if (i == "Y-") newPos = new Vector(pos.X, pos.Y - 5, pos.Z);
-                    else if (i == "Z+") newPos = new Vector(pos.X, pos.Y, pos.Z + 5);
-                    else if (i == "Z-") newPos = new Vector(pos.X, pos.Y, pos.Z - 5);
-
-                    entity.Teleport(newPos, entity.AbsRotation);
-                    o.PostSelectAction = PostSelectAction.Nothing;
-                });
-            }
-        }
-        else if (_type == 1)
-        {
-            foreach (var i in _retardedWayCords)
-            {
-                menu.AddItem($"{i}5", (p, o) =>
-                {
-                    var angles = entity!.AbsRotation!;
-                    var newQangle = new QAngle(angles.X, angles.Y, angles.Z);
-
-                    if (i == "X+") newQangle = new QAngle(angles.X + 5, angles.Y, angles.Z);
-                    else if (i == "X-") newQangle = new QAngle(angles.X - 5, angles.Y, angles.Z);
-                    else if (i == "Y+") newQangle = new QAngle(angles.X, angles.Y + 5, angles.Z);
-                    else if (i == "Y-") newQangle = new QAngle(angles.X, angles.Y - 5, angles.Z);
-                    else if (i == "Z+") newQangle = new QAngle(angles.X, angles.Y, angles.Z + 5);
-                    else if (i == "Z-") newQangle = new QAngle(angles.X, angles.Y, angles.Z - 5);
-
-                    entity.Teleport(entity.AbsOrigin, newQangle);
-                    o.PostSelectAction = PostSelectAction.Nothing;
-                });
-            }
-        }
-
-        else if (_type == 2)
-        {
-
-            foreach (var a in _plugin.Config.customAngleValues)
-            {
-                foreach (var i in _retardedWayCords)
-                {
-                    menu.AddItem($"{i}{a}", (p, o) =>
-                    {
-                        var angles = entity!.AbsRotation!;
-
-                        float x = angles.X;
-                        float y = angles.Y;
-                        float z = angles.Z;
-
-                        if (i.StartsWith("X"))
-                        {
-                            x = _plugin.PluginUtils!.SnapToStep(x, a);
-                            x += (i == "X+" ? a : -a);
-                        }
-                        else if (i.StartsWith("Y"))
-                        {
-                            y = _plugin.PluginUtils!.SnapToStep(y, a);
-                            y += (i == "Y+" ? a : -a);
-                        }
-                        else if (i.StartsWith("Z"))
-                        {
-                            z = _plugin.PluginUtils!.SnapToStep(z, a);
-                            z += (i == "Z+" ? a : -a);
-                        }
-
-                        entity.Teleport(entity.AbsOrigin, new QAngle(x, y, z));
-                        o.PostSelectAction = PostSelectAction.Nothing;
-                    });
-                }
-
-            }
-        }
-        else if (_type == 3)
-        {
-
-            foreach (var a in _plugin.Config.customPositionValues)
-            {
-                foreach (var i in _retardedWayCords)
-                {
-                    menu.AddItem($"{i}{a}", (p, o) =>
-                    {
-                        var position = entity!.AbsOrigin!;
-
-                        float x = position.X;
-                        float y = position.Y;
-                        float z = position.Z;
-
-                        if (i.StartsWith("X"))
-                        {
-                            x = _plugin.PluginUtils!.SnapToStep(x, a);
-                            x += (i == "X+" ? a : -a);
-                        }
-                        else if (i.StartsWith("Y"))
-                        {
-                            y = _plugin.PluginUtils!.SnapToStep(y, a);
-                            y += (i == "Y+" ? a : -a);
-                        }
-                        else if (i.StartsWith("Z"))
-                        {
-                            z = _plugin.PluginUtils!.SnapToStep(z, a);
-                            z += (i == "Z+" ? a : -a);
-                        }
-
-                        entity.Teleport(new Vector(x,y,z), entity.AbsRotation);
-                        o.PostSelectAction = PostSelectAction.Nothing;
-                    });
-                }
-            }
-        }
-        */
         menu.PrevMenu = prevMenu;
         menu.Display(player, 0);
     }

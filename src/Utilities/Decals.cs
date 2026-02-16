@@ -2,7 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 
-namespace CS2_Poor_MapDecals.Utils;
+namespace CS2_Poor_MapAdvertisements.Utils;
 
 public partial class PluginUtils
 {

@@ -3,11 +3,11 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 
-namespace CS2_Poor_MapDecals.Managers;
+namespace CS2_Poor_MapAdvertisements.Managers;
 
-public class CommandsManager(CS2_Poor_MapDecals plugin)
+public class CommandsManager(CS2_Poor_MapAdvertisements plugin)
 {
-    private readonly CS2_Poor_MapDecals _plugin = plugin;
+    private readonly CS2_Poor_MapAdvertisements _plugin = plugin;
 
     public void RegisterCommands()
     {
