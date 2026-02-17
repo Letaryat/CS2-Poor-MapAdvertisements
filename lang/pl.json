@@ -1,7 +1,7 @@
 {
 	"Prefix": "{lime}[Poor-MapAdvertisements]{default}",
 	"NoAccess": "{red}Nie posiadasz dostepu do tej komendy!",
-	"NoArg": "{red}Arguments are invalid!",
+	"NoArg": "{red}Argumenty sa nieprawidlowe!",
 	"MapAdvertMenu_Header": "Poor Map Advertisements",
 	"CreatePropMenu": "Stworz propa",
 	"Prop_Header": "Stworz propa",
