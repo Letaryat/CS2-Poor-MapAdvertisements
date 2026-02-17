@@ -1,7 +1,4 @@
-> [!CAUTION]
-> With the 28.07.2025 update, decal plugin might crash clients / server. Seems that .vmat files are not cached properly. Until it is fixed I recommend using [CS2-Poor-MapPropAds](https://github.com/Letaryat/CS2-Poor-MapPropAds) that uses props instead of decals.  
-
-# CS2-Poor-MapDecals
+# CS2-Poor-MapAdvertisements
 
 This plugin allows for server owners to create spray type advertisements that are placed on wall.<br/>
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H8TK0L9)
