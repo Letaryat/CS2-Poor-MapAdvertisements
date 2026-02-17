@@ -34,7 +34,10 @@ public class EventManager(CS2_Poor_MapAdvertisements plugin)
     {
         foreach(var player in _plugin.MenuManager!._selectedMaterial)
         {
-            player.Key.PrintToCenterHtml($"{_plugin.Localizer["OnTickNotification", player.Value.material!]}");
+            if(player.Value.onPing)
+            {
+                player.Key.PrintToCenterHtml($"{_plugin.Localizer["OnTickNotification", player.Value.material!]}");
+            }
         }
     }
 

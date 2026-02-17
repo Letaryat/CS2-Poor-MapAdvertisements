@@ -40,6 +40,24 @@ public partial class PluginMenu
         {
             PropMaterialsMenu(player, menu);
         });
+
+        menu.AddItem($"{_plugin.Localizer["VipOnly", data.isVip]}", (p, o) =>
+        {
+            if (data.isVip)
+            {
+                data.isVip = false;
+            }
+            else
+            {
+                data.isVip = true;
+            }
+
+            Server.NextFrame(() =>
+            {
+                CreatePropMenu(player, prevMenu);
+            });
+        });
+
         menu.AddItem($"{_plugin.Localizer["SpawnOnPing", _selectedMaterial[player].onPing]} ", (p, o) =>
         {
             if (_selectedMaterial[player].onPing) _selectedMaterial[player].onPing = false;
@@ -205,7 +223,7 @@ public partial class PluginMenu
     {
         if (player == null) return;
         WasdMenu menu = new($"{_plugin.Localizer["Material_Header"]}", _plugin);
-        
+
         var entity = prop.EntityProp;
         if (entity == null) return;
 

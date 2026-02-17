@@ -65,6 +65,23 @@ public partial class PluginMenu
                 DecalsDepthMenu(player, menu);
             });
 
+        menu.AddItem($"{_plugin.Localizer["VipOnly", data.isVip]}", (p, o) =>
+        {
+            if (data.isVip)
+            {
+                data.isVip = false;
+            }
+            else
+            {
+                data.isVip = true;
+            }
+
+            Server.NextFrame(() =>
+            {
+                CreateDecalMenu(player, prevMenu);
+            });
+        });
+
         menu.AddItem($"{_plugin.Localizer["SpawnOnPing", _selectedMaterial[player].onPing]}", (p, o) =>
         {
             if (_selectedMaterial[player].onPing) _selectedMaterial[player].onPing = false;
