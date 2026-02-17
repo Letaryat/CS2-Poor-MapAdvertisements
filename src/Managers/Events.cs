@@ -1,18 +1,20 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 
-namespace CS2_Poor_MapDecals.Managers;
+namespace CS2_Poor_MapAdvertisements.Managers;
 
-public class EventManager(CS2_Poor_MapDecals plugin)
+public class EventManager(CS2_Poor_MapAdvertisements plugin)
 {
-    private readonly CS2_Poor_MapDecals _plugin = plugin;
+    private readonly CS2_Poor_MapAdvertisements _plugin = plugin;
     public void RegisterEvents()
     {
         //Events:
         _plugin.RegisterEventHandler<EventRoundStart>(OnRoundStart);
         _plugin.RegisterEventHandler<EventPlayerPing>(OnPlayerPing);
+
         //Listeners:
         _plugin.RegisterListener<Listeners.OnServerPrecacheResources>((ResourceManifest manifest) =>
         {
@@ -23,8 +25,50 @@ public class EventManager(CS2_Poor_MapDecals plugin)
         });
         _plugin.RegisterListener<Listeners.OnMapStart>(OnMapStart);
         _plugin.RegisterListener<Listeners.CheckTransmit>(OnCheckTransmit);
+        _plugin.RegisterListener<Listeners.OnTick>(OnTick);
+        _plugin.AddCommandListener("say", OnPlayerChatListener);
+        _plugin.AddCommandListener("say_team", OnPlayerChatListener);
     }
 
+    private void OnTick()
+    {
+        foreach(var player in _plugin.MenuManager!._selectedMaterial)
+        {
+            if(player.Value.onPing)
+            {
+                player.Key.PrintToCenterHtml($"{_plugin.Localizer["OnTickNotification", player.Value.material!]}");
+            }
+        }
+    }
+
+    private HookResult OnPlayerChatListener(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (player == null) return HookResult.Continue;
+        if (!AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag) || !_plugin.MenuManager!._listenForChat.ContainsKey(player))
+        {
+            return HookResult.Continue;
+        }
+        var msg = commandInfo.GetArg(1);
+        if(string.IsNullOrWhiteSpace(msg)) return HookResult.Continue;
+        if(!int.TryParse(msg, out int value))
+        {
+            player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer["NoArg"]}");
+            return HookResult.Continue;
+        }
+
+        _plugin.MenuManager._listenForChat[player].ModelGroupIndex = value;
+        
+        player.PrintToChat($"{_plugin.Localizer["Prefix"]}{_plugin.Localizer[$"PlayerSelectedSkin", value]}");
+
+        _plugin.MenuManager._listenForChat[player].EntityProp!.AcceptInput("Skin", _plugin.MenuManager._listenForChat[player].EntityProp, _plugin.MenuManager._listenForChat[player].EntityProp, value.ToString());
+
+        Server.NextFrame(() =>
+        {
+            _plugin.MenuManager._listenForChat.Remove(player);
+        });
+
+        return HookResult.Continue;
+    }
 
     private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
     {
@@ -38,7 +82,7 @@ public class EventManager(CS2_Poor_MapDecals plugin)
         var player = ping.Userid;
         if (player == null) return HookResult.Continue;
 
-        if (!_plugin.AllowAdminCommands || !AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag) || !_plugin.PingPlacement)
+        if (!AdminManager.PlayerHasPermissions(player, _plugin.Config.AdminFlag) || !_plugin.MenuManager!._selectedMaterial.TryGetValue(player, out var selected))
         {
             return HookResult.Continue;
         }
@@ -46,15 +90,31 @@ public class EventManager(CS2_Poor_MapDecals plugin)
         var pawn = player.PlayerPawn.Value;
         if (pawn == null) return HookResult.Continue;
 
-
-        _plugin.PluginUtils!.CreateDecalOnClick(pawn, new Vector(ping.X, ping.Y, ping.Z), _plugin.DecalWidth, _plugin.DecalHeight, _plugin.ForceOnVip);
-
+        if (!selected!.onPing) return HookResult.Continue;
+        if(_plugin.PluginUtils!.CheckMaterial(selected.material!))
+        {
+            _plugin.PluginUtils!.CreatePropModelOnClick(new Vector(ping.X, ping.Y, ping.Z), new QAngle(pawn.EyeAngles.X, pawn.EyeAngles.Y, pawn.EyeAngles.Z), selected.material!, selected.isVip, selected.isOnGround, selected.materialIndex);
+        }
+        else
+        {
+            _plugin.PluginUtils!.CreateDecalOnClick(player, new Vector(ping.X, ping.Y, ping.Z));
+        }
+        
         return HookResult.Continue;
     }
 
     private void OnCheckTransmit(CCheckTransmitInfoList infoList)
     {
-        var allAdvs = Utilities.FindAllEntitiesByDesignerName<CEnvDecal>("env_decal");
+        var decals = Utilities.FindAllEntitiesByDesignerName<CEnvDecal>("env_decal");
+        var props = Utilities.FindAllEntitiesByDesignerName<CPhysicsPropOverride>("prop_physics_override");
+
+        var allAdvs = new List<CBaseEntity>();
+
+        if(decals != null) allAdvs.AddRange(decals);
+        if(props != null) allAdvs.AddRange(props);
+
+        if(!allAdvs.Any()) return;
+
         if (allAdvs == null || !allAdvs.Any()) return;
         try
         {
@@ -78,9 +138,8 @@ public class EventManager(CS2_Poor_MapDecals plugin)
                 {
                     foreach (var ad in allAdvs)
                     {
-                        //if (ad?.Entity?.Name != null && ad.Entity.Name.Contains("advert"))
                         if (ad.Entity!.Name == null) continue;
-                        if (ad!.Entity!.Name.StartsWith("advert") && !ad!.Entity!.Name.Contains("force"))
+                        if (ad!.Entity!.Name.StartsWith("advert") && ad!.Entity!.Name.Contains("force"))
                         {
                             info.TransmitEntities.Remove(ad);
                         }
@@ -96,13 +155,9 @@ public class EventManager(CS2_Poor_MapDecals plugin)
     }
 
 
-
     private void OnMapStart(string mapName)
     {
         _plugin.PropManager!._props.Clear();
-        _plugin.AllowAdminCommands = false;
-        _plugin.PingPlacement = false;
-        _plugin.DecalAdToPlace = 0;
         Server.NextFrame(() =>
         {
             _plugin.PropManager._mapName = mapName;

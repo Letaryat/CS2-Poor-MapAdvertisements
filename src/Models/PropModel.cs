@@ -1,9 +1,13 @@
-﻿namespace CS2_Poor_MapDecals.Models
+﻿using System.Text.Json.Serialization;
+using CounterStrikeSharp.API.Core;
+
+namespace CS2_Poor_MapAdvertisements.Models
 {
     public class PropModel
     {
         public int Id { get; set; }
-        public int ModelIndex { get; set; }
+        public string? modelPath { get; set; }
+        public int ModelGroupIndex { get; set; }
         public float posX { get; set; }
         public float posY { get; set; }
         public float posZ { get; set; }
@@ -13,5 +17,11 @@
         public float width { get; set; }
         public float height { get; set; }
         public bool forceOnVip { get; set; }
+        public bool isOnGround { get; set; }
+        public int depth { get; set; } 
+
+        [JsonIgnore]
+        public CBaseEntity? EntityProp { get; set; }
+
     }
 }

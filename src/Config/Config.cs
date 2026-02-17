@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 
 
-namespace CS2_Poor_MapDecals.Config
+namespace CS2_Poor_MapAdvertisements.Config
 {
     public class PluginConfig : BasePluginConfig
     {
@@ -14,6 +14,12 @@ namespace CS2_Poor_MapDecals.Config
 
         [JsonPropertyName("Props Path")]
         public string[] Props { get; set; } = [];
+
+        [JsonPropertyName("Custom Position Values")]
+        public int[] customPositionValues { get; set; } = [];
+
+        [JsonPropertyName("Custom Angle Values")]
+        public int[] customAngleValues { get; set; } = [];
 
         [JsonPropertyName("Enable commands")]
         public bool EnableCMD { get; set; } = true;
